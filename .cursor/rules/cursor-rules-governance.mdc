@@ -19,14 +19,14 @@ La règle vise :
 
 - Eviter la confusion entre règles et spéfication par l'IA et par là l'application de règles inapropriées
 - Eviter que les règles soient ignorées par l'IA, faire appliquer aussi systématiquement que possible les règles de gouvernance par l'IA de manière à opérer dans un cadre maitrisé de standards et de bonnes pratiques qui garantisse la qualité attendue de génération
-- Cursor ne propose pas (encore) de fonctionnalités pour gérer et appliquer un référentiel commun et unique de règles de gouvernance entre plusieurs projets ou workspaces. Cursor interprète correctement les seules règles de gouvernance placées à la racine du workspace en cours d'exécution dans .cursor/rules. Les règles de gouverance des répertoires ajoutés dans le workspace principal semblent être ignorées ou du moins appliquées uniquement dans ce contexte d'application c'est à dire lors d'une génération dans le périmètre du répertoire ajouté.
+- Cursor ne propose pas (encore) de fonctionnalités pour gérer et appliquer un référentiel commun et unique de règles de gouvernance entre plusieurs projets ou workspaces en dehors de l'utilisation des User Rules. Cursor interprète globalement à plusieurs projets les seules règles de gouvernance placées à la racine du workspace en cours d'exécution dans .cursor/rules. Les règles de gouverance des répertoires ajoutés dans le workspace principal semblent être ignorées ou du moins appliquées uniquement dans ce contexte d'application c'est à dire lors d'une génération dans le périmètre du répertoire ajouté.
 
 ## Comportement général attendu
 
 - L'IA comprend et fait la distinction entre les règles de gouvernance et les spécifications
 - L'IA applique les règles (règles de gouvernance et spécifications) qui s'appliquent au contexte d'application et selon le contexte d'application de la génération ou de la réflexion
 - L'IA vérifie, assure et maintien la cohérence globale entre les règles lorsqu'elle intervient sur celles-ci
-- L'utilisateur de l'IA élabore et maintien pour lui même un jeu de règles de gouvernance commun et unique applicable à l'ensemble des projets. Il injecte ce jeu de règles de gouvernance commun et unique dans les projets de développement à la racine du workspace cursor dans le répertoire .cursor/rules pour faire en sorte qu'elles soient prises en compte par les mécanismes standards de cursor
+- L'utilisateur de l'IA élabore et maintien un jeu de règles de gouvernance commun et unique applicable à l'ensemble des projets. Il injecte ce jeu de règles de gouvernance commun et unique dans les projets de développement à la racine du workspace cursor dans le répertoire .cursor/rules pour faire en sorte qu'elles soient prises en compte par les mécanismes standards de cursor. Il peut ajouter projects-common le temps de l'opération de mise à jour, il est recommandé de retirer ce projet par la suite pour éviter les confusions et une surcharge informationnelle inutile provoquée par la duplication des règles. Il respecte en cela @cursor-workspace-governance.
 
 ## Contexte d'application et généralités
 
