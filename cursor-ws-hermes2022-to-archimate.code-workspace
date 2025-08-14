@@ -1,31 +1,11 @@
 {
-  "folders": [
-    {
-      "name": "📋 Projet Maître - Hermes2022-to-ArchiMate",
-      "path": "."
-    },
-    {
-      "name": "🔧 hermes2022-to-archimate",
-      "path": "./hermes2022-to-archimate"
-    },
-    {
-      "name": "📚 projects-common",
-      "path": "./projects-common"
-    }
-  ],
-  "settings": {
-    "files.exclude": {
-      "**/node_modules": true,
-      "**/.git": false
-    },
-    "search.exclude": {
-      "**/node_modules": true
-    }
-  },
-  "extensions": {
-    "recommendations": [
-      "ms-vscode.vscode-json",
-      "ms-vscode.vscode-markdown"
-    ]
-  }
-} 
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../hermes2022-to-archimate"
+		}
+	],
+	"settings": {}
+}

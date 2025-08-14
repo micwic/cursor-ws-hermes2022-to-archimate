@@ -1,0 +1,80 @@
+---
+alwaysApply: true
+---
+
+# specification-governance.mdc : Définition, gestion et application des spécifications (règles) à la génération de code pour le projet, pour les domaines ou modules du projet et les composants sous-jacents du projet
+
+## Objectifs de la règle
+
+- **Fixer les orientations générales** pour les solutions à réaliser dans le contexte du projet, des domaines et des modules du projet et pour les composants sous-jacents du projet
+- **Éviter les itérations inutiles** causées par la reproduction d'erreurs connues
+- **Assurer et maintenir la cohérence sans créer de redondance** entre les différents domaines et modules du projet et pour les composants sous-jacents du projet (principes de ségrégation des domaines dans le projet)
+- **Documenter les décisions** d'architecture et de conception générale qui fixe le cadre de la réalisation à chaque niveau respectif
+- **Faciliter la compréhension** par l'IA et les développeurs dans le contexte de la conception et réalisation du projet, des domaines et des modules du projet et pour les composants sous-jacents du projet
+- **Rester dans le cadre des responsabilité des spécifications générales** en spécifiant uniquement les orientations générales, l'architecture et la conception générale, les exigences fonctionnelles et non fonctionnelles pour le projet, les domaines ou les modules du projet ainsi que pour les composants sous-jacents du projet (principes de ségrégation des domaines dans la méthodologie appliquée au projet). Les spécificaitons détaillées des fonctionnalités qui doivent supporter le cadre des spéfications générales est couvert avec une approche Behavior Driven Development régie par @bdd-governance
+
+## Problèmes résolus/à résoudre
+
+- **Sur ingénierie** : L'IA génère des solutions spécifiques complexes ou compliquées alors que des alternatives standards et simples existent
+- **Redondance** : L'IA génère de nouveaux composants alors qu'un ajustement de composants existants pourrait suffire
+- **Incohérence** : L'IA applique des principes et des concepts incohérents entre eux sur le même périmètre ce qui nuit à l'harmonisation des comportements
+- **Éviter les itérations inutiles** causées par la reproduction cyclique de tentatives qui provoquent des erreurs connues qui ont été identifiées dans les anti-patterns et dont le détail a été historisé
+
+## Comportement général attendu
+
+- L'IA prend systématiquement connaissance des spécifications au niveau de la hierarchie de projet qui correspond à l'élément sur lequel la génération ou l'analyse par l'IA porte, et aussi du niveau amont et des niveaux avals pour assurer la cohérence
+- L'utilisateur élabore les spécifications initiales pour le projet, pour les domaines et les modules du projet ainsi que pour composants sous-jacents du projet
+- L'utilisateur et l'IA s'assure rigoureusement de ne pas créer de redondance entre les différents niveaux de la hierarchie de projet, chaque niveau spécifie uniquement son propre périmètre
+
+# Contexte d'application et généralités
+
+- La règle s'applique aux spéficiations générales du projet, des domaines et des modules du projet et pour les composants sous-jacents du projet
+
+## Règles à appliquer
+
+### Localisation et dénomination des spécifications générales
+
+#### Règles obligatoires à appliquer
+
+- **Règle générale de localisation** : Le fichier de spécification générale est localisé dans le sous-répertoire .cursor/rules du répertoire de la hierarchie de projet pour lequel la spéfication est élaborée
+- **Règle générale de nommage** : Le fichier est prefixé et nommé avec l'élément spécifié comme suit `specification-{element}.mdc`. L'élément est le projet, le domaine ou le module du projet ou un composant sous-jacents du projet. Le nom de l'élément est le nom du répertoire parent de .cusor/rules. En présence de cas complexe, pour éviter des spéfications trop volumineuses, un sujet peut être défini comme suffixe à l'élément pour spécifier un comportement particulier de l'élément comme suit `specification-{element}-{subject}.mdc`. Le chemin de la localisation et associé au nom de la spécification conformément à @template-specification.md pour éviter des confusions.
+
+#### Exemples
+
+##### ✅ Correct
+
+- **Spécification générale du projet** : specification-{nom du répertoire du projet}.mdc dans {project-root}/.cursor/rules
+- **Spécification générale d'un domaine ou module ou composant du projet** : specification-{nom du répertoire du domaine ou du module ou du composant}.mdc dans {project-root}/{domain|module|component}.cursor/rules
+- **Spécification générale d'un comportement particulier pour un domaine ou module ou composant du projet** : specification-{nom du répertoire du domaine ou du module ou du composant}-{comportement particulier}.mdc dans {project-root}/{domain|module|component}.cursor/rules
+
+### Contenu des spécifications générales
+
+#### Règles obligatoires à appliquer
+
+- **Principes généraux d'utilisation** selon #cursor-rules-governance hormis la localisation, le nommage et la localisation
+- **Structure et contenu** : structure et contenu selon @template-specification.md
+- **Validité des spécifications** : Les spécifitations contiennent uniquement des informations valables au moment pour le périmètre au niveau de détail pertinent. Les informations obsolètes, incorrectes, les informations qui ont conduit à un échec ou pour un pattern non retenu finalement sont retirées de la spécification mais historisées selon @cursor-rules-summary-governance à l'instar des règles de gouvernance qui appliquent le même principe d'historisation. Les spécifications sont définies pour le périmètre et au niveau de détail pertinent en respectant strictement les principes de ségrégation avec les autres projets, domaines et modules et composants sous-jacents.
+
+### Comportements interdits/proscrits/à éviter
+
+- **Historisation** : Les spécifications ne servent pas d'historique, l'historisation des changements de spécifications s'effectue selon @cursor-rules-summary-governance
+- **Surspécification** : Eviter d'alourdir les spécifications avec des informations sans valeur ajoutée (overspecification, gold plating, bloat) qui ne sont pas purement des spécifications.
+
+### Elaboration et modification du contenu des spécifications
+
+#### Règles obligatoires à appliquer
+
+- **Spécifications lisibles** en langage naturel dans la langue du projet selon format @markdown-formatting-standar à l'instar de @cursor-rules-governance
+- **Mettre à jour** la date de révision si modifiée
+- **Générer** une spécification qui reste cohérente avec son propre contenu, avec la ou les spécifications parentes dans la hierarchie de projet, la ou les spécifications enfants, la ou les références explicites à d'autres spécifications dans la spécification elle-même
+- **Structure et contenu** : structure et contenu selon @template-specification.md
+- **Ajouter** toute nouvelle erreur identifiée aux Anti-Patterns de manière succincte et historisé le détail pour la compréhension de l'erreur et du contexte dans lequel elle a été causée
+- **Ajouter** des exemples de code dans des blocs appropriés pour faciliter la génération IA de comportements standardisés fonctionnels et l'identification IA des générations génératrices d'erreurs à éviter
+- **Consulter** les Anti-Patterns et l'historisation avant de proposer une solution
+- **Respecter** les patterns validés dans les propositions de solution et/ou proposr un nouveau pattern si nécessaire
+- **Proposer** des mises à jour quand des incohérences importantes sont détectées et/ou quand d'autres spécifications doivent être ajustées pour assurer la cohérence, demander une confirmation de l'utilisateur IA avant de les appliquer
+
+#### Validation
+
+- **Vérifier** que la structure et le contenu est conforme et valable selon @template-specification.md, signaler les non conformités de fond détectées, corriger les non conformités de formes qui peuvent être ajustées sans perte de valeur
+- **Vérifier** que la spécification reste cohérente après modification avec son propre contenu, la ou les spécifications parentes dans la hierarchie de projet, la ou les spécifications enfants, la ou les références explicites à d'autres spécifications dans la spécification elle-même

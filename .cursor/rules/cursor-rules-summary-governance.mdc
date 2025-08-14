@@ -1,0 +1,83 @@
+---
+alwaysApply: true
+---
+
+# cursor-rules-summary-governance : Gouvernance des résumés de session de génération par l'IA - Uniforme pour les règles de gouvernance et les spécifications
+
+> Créé le : [2025-08-06]  
+> Dernière mise à jour : [2025-08-06]
+
+## Objectifs de la règle
+
+**UNIFORMISER** : Les résumés de session doivent suivre la **même gouvernance** que ce soit pour les règles de gouvernance ou les spécifications, avec **localisation appropriée** selon le contexte
+**OPTIMISER, ACTUALISER** : Les règles doivent contenir uniquement le contenu valable et applicable au moment, sans redondance, sans historique autre que synthétique pour permettre l'identification des erreurs rencontrées et solutions trouvées dans le contexte
+**CAPITALISER** : Les expériences acquises lors de l'application des règles dans le contexte ne doivent pas être perdues
+
+## Problèmes résolus/à résoudre
+
+- En présence de problèmes complexes, des variantes de solutions déjà explorées dans le même contexte sans succès ont été réappliquées itérativement plusieurs fois de manière cyclique par l'IA
+- Des solutions différentes ont été proposées et appliquées par l'IA dans des contextes différents mais pour pour des problèmes semblables ce qui est susceptible de nuire à l'objectif d'harmonisation des comportements et des composants
+
+## Comportement général attendu
+
+- L'IA génère systématiquement un résumé de session de génération en cas de modification significative de règles de gouvernance ou de spéfications
+- L'IA génère régulièrement un résumé général synthétique de session de génération (chronicité selon règles ci-dessous)
+- L'utilisateur de l'IA générative demande un résumé de session sur une situation donnée, un sujet, une constation lorsqu'il le juge nécessaire, il précise à quel niveau le résumé doit être généré [Règles de gouvernance|projet|module]
+- L'utilisateur de l'IA générative demande la suspension de la génération de résumé de session lors de phases exploratoires afin d'éviter de générer des informations parasites sans véritable valeur
+
+# Contexte d'application et généralités
+
+- Les règles de gouvernance sont régies par @cursor-rules-governance
+- Les spécifications sont régies par @specification-governance
+- Les localisations respectives des règles de gouvernance et des spécifications sont définies dans ces règles de gouvernance générales. Ces localisations sont la racine de la localisation du répertoire pour les résumés de sessions qui ont provoqué les adaptations respectives à résumer
+
+## Règles à appliquer
+
+### Résumé des sessions de génération IA
+
+#### Règles obligatoires à appliquer
+
+- **LOCALISATION** : La localisation du résumé est le répertoire /summary du répertoire parent de la règle ou des règles en cas changement global de celles-ci tel que défini dans @cursor-rules-governance et dans @specification-governance. Une session de génération IA n'est pas forcément résumée globalement mais aussi ou plutôt à chaque niveau de règle impacté par la génération
+- **STRUCTURE, CONTENU** : structure et contenu selon @template-rule-summary.md
+- **FORMAT** : formattage du texte selon @markdown-formatting-standards
+- **NOMMAGE** : YYYY-MM-DD-{description des adaptations effectuées}.md`
+- **CHRONICITE** : Génération de résumés par session significative (>1h travail génératif ou découvertes importantes ou impact important) ou immédiatement en fin de session ou à la demande de l'utilisateur de l'IA générative
+- **CONTENU** : contenu factuel, actions concrètes, résultats effectifs mesurables et contrôlables, constats vérifiés sur base formelle citée en référence, propositions/recommendations sur base documentaire officielle uniquement citée en référence
+
+#### Comportements interdits/proscrits/à éviter
+
+- **SUPPOSITION** : Il est formellement interdit de formuler des suppositions, le contenu des résumés est élaboré uniquement à base d'informations factuelles vérifiées
+- **FIABILITE REFERENCES** : Il est formellement interdit de baser ses recherches et ses réflexions sur la base de référence peu fiable, les solutions et recommandations formulées sont fondées/vérifiées à partir de la documentation officielle
+
+#### Validation
+
+- Vérifier que la structure et le contenu est conforme et valable selon @template-rule-summary.md, signaler les non conformités de fond détectées, corriger les non conformités de formes qui peuvent être ajustées sans perte de valeur
+- Vérifier que le formatage du contenu est conforme et valable selon @markdown-formatting-standards, signaler les non conformités qui ne peuvent pas être ajustées, corriger les non conformités de formes qui peuvent être ajustées sans perte de valeur
+- Vérifier que la date de dernière mise à jour (> Dernière mise à jour : [YYYY-MM-DD]) est modifiée à la date du jour conformément à @date-awareness
+- Vérifier que les liens vers des règles ou des fichiers pointent effectivement sur des règles et fichiers existants et accessibles
+
+#### Exemples
+
+##### ✅ Correct
+
+**Localisation et dénomination**
+
+- Création ou adaptation d'une règle de gouvernance générale : projects-common/.cursor/rules/summary/2025-06-22-regles-cursor-mise-a-jour-powershell-windows11.md
+- Adaptation de spécifications générales pour un module ou un composant d'un projet : cii-via-cip-archimate-ia-repository/archimate-ia-loader/rules/summary/2025-05-20-specification-loader-test-tdd-alignment.md
+- Génération de code à partir des spécifications existantes : cii-via-cip-archimate-ia-repository/archimate-ia-rag/rules/summary/2025-03-20-integration-phase2-graphrag-completion.md
+- Revue ou validation générale au niveau du projet : cii-via-cip-archimate-ia-repository/rules/summary/2025-12-22-validation-infrastructure-complete-archimate-ia.md
+
+### Cohérence avec les spécifications
+
+#### Règles obligatoires à appliquer
+
+- **Résumés complètent** les spécifications, ne les remplacent pas
+- **Erreurs résumées** → ajout anti-patterns spécifications correspondantes
+- **Solutions résumées** → intégration patterns validés si réutilisables spécifications correspondantes
+
+### Cohérence avec les règles de gouvernance
+
+#### Règles obligatoires à appliquer
+
+- **Découvertes techniques** → création/mise à jour règles de gouvernance appropriées pour la technologie concernée
+- **Optimisations environnement** → intégration configuration standard

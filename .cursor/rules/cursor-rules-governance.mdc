@@ -1,0 +1,114 @@
+---
+alwaysApply: true
+---
+
+# cursor-rules-governance : Définition, gestion et application des règles (rules) intégrée à cursor
+
+> Créé le : [2025-08-06]  
+> Dernière mise à jour : [2025-08-06]
+
+## Objectifs de la règle
+
+La règle vise :
+
+- à définir pour quoi, comment et où les règles sont utilisées dans le cadre des projets réalisés avec cursor
+- à définir une structure commune unique interprétable et compréhensible par l'IA et les utilisateurs de l'IA
+- à garantir un contenu au niveau de qualité attendu qui produit la valeur attendue lors de la génération par l'IA de structure et de contenu dans cette structure (spécification, code, documentation, ...)
+
+## Problèmes résolus/à résoudre
+
+- Eviter la confusion entre règles et spéfication par l'IA et par là l'application de règles inapropriées
+- Eviter que les règles soient ignorées par l'IA, faire appliquer aussi systématiquement que possible les règles de gouvernance par l'IA de manière à opérer dans un cadre maitrisé de standards et de bonnes pratiques qui garantisse la qualité attendue de génération
+- Cursor ne propose pas (encore) de fonctionnalités pour gérer et appliquer un référentiel commun et unique de règles de gouvernance entre plusieurs projets ou workspaces. Cursor interprète correctement les seules règles de gouvernance placées à la racine du workspace en cours d'exécution dans .cursor/rules. Les règles de gouverance des répertoires ajoutés dans le workspace principal semblent être ignorées ou du moins appliquées uniquement dans ce contexte d'application c'est à dire lors d'une génération dans le périmètre du répertoire ajouté.
+
+## Comportement général attendu
+
+- L'IA comprend et fait la distinction entre les règles de gouvernance et les spécifications
+- L'IA applique les règles (règles de gouvernance et spécifications) qui s'appliquent au contexte d'application et selon le contexte d'application de la génération ou de la réflexion
+- L'IA vérifie, assure et maintien la cohérence globale entre les règles lorsqu'elle intervient sur celles-ci
+- L'utilisateur de l'IA élabore et maintien pour lui même un jeu de règles de gouvernance commun et unique applicable à l'ensemble des projets. Il injecte ce jeu de règles de gouvernance commun et unique dans les projets de développement à la racine du workspace cursor dans le répertoire .cursor/rules pour faire en sorte qu'elles soient prises en compte par les mécanismes standards de cursor
+
+## Contexte d'application et généralités
+
+Les règles (rules) intégrées à cursor sont utilisés dans deux contextes :
+
+- pour les règles de gouvernance générale ou spécifique à un projet
+- pour les spécifications générales de projet, de domaines ou de composants d'un projet
+
+Lorsque le mot "règle" est utilisé, la portée du contenu s'applique à la fois sur les règles de gouvernance générale ou spécifique à un projet et sur les spécifications de projet, de domaines ou de composants d'un projet
+
+Les règles de gouvernance générale sont gérés dans un projet commun partagé avec tous les autres projets selon les règles ci-dessous
+Les règles de gouvernance spécifique à un projet sont gérées dans le projet concerné selon les règle ci-dessous
+Les spécifications générales de projet, de domaines ou de composants d'un projet sont gérées dans la hierarchie du projet concerné selon les règles ci-dessous
+
+Les règles de gouvernance s'applique aux méthodes et aux procédés pilotés par l'IA qui génère un résultat
+Les spécifications générales décrivent les exigences fonctionnelles et non fonctionnelles ainsi que les orientations générales de conception à respecter pour le périmètre correspondant, à savoir le projet, un domaine du projet ou un composant du projet voire un sujet à traiter à l'intérieur de ceux-ci selon @specification-governance
+Les spécifications détaillées (en l'occurence des spécifications de tests) sont issues des processus itératifs des principes Behavior Driven Development mis en oeuvre selon @bdd-governance
+
+Les projets sont gérés dans un workspace qui peut être propre au projet lui-même ou un workspace qui regroupe plusieurs projets selon @cursor-workspace-governance
+
+## Règles à appliquer
+
+### Règles de gouvernance générale communes à tous les projets
+
+#### Règles obligatoires à appliquer
+
+- **UTILISER** : Les règles générales de gouvernance des projets sont appliquées systématiquement par l'IA
+- **LOCALISATION et NOMMAGE** : `projects-common/.cursor/rules/{rule-name}.mdc`
+
+### Règles de gouvernance spécifique à un projet
+
+#### Règles obligatoires à appliquer
+
+- **UTILISER** : Les règles de gouvernance spécifique à un projets sont appliquées systématiquement et prioritairement par l'IA uniquement pour les actions à l'intérieur de ce projet
+- **LOCALISATION et NOMMAGE** : `{project-root}/.cursor/rules/{rule-name}.mdc`
+
+#### Comportements interdits/proscrits/à éviter
+
+- Créer une règle dans .cursorrules à la racine des projets (déprécié dans les versions actuelles cursor)
+- Créer une règle de gouvernance dans les règles personnelles (user rules) et vice versa
+
+### Toutes les règles de gouvernance
+
+#### Règles obligatoires à appliquer
+
+- **STRUCTURE et CONTENU** : structure et contenu selon @template-rule.md
+
+#### Validation
+
+- Vérifier que la structure et le contenu est conforme et valable selon @template-rule.md, signaler les non conformités de fond détectées, corriger les non conformités de formes qui peuvent être ajustées sans perte de valeur
+
+### Spécifications générale de projet
+
+#### Règles obligatoires à appliquer
+
+- **UTILISER** : Les spécifications générales de projet sont appliquées au projet concerné uniquement
+- **LOCALISATION et NOMMAGE** : `{project-root}/rules/specification-{project-name}.mdc`
+
+### Spécifications générale de domaines ou de composants d'un projet
+
+#### Règles obligatoires à appliquer
+
+- **UTILISER** : Les spécifications générales de domaines ou de composants d'un projet sont appliquées au domaine ou au composant concerné uniquement
+- **LOCALISATION et NOMMAGE** : `{project-root}/{module}/rules/specification-{module}.mdc` module = [domain|component|subject]
+
+### Toutes les spécifications générales
+
+#### Règles obligatoires à appliquer
+
+- **UTILISER** : Les spécifications générales de projet, de domaines ou de composants d'un projet sont régies par @specification-governance, en plus de la présente règle de base
+
+### Toutes les règles
+
+#### Règles obligatoires à appliquer
+
+- **PROPRIETES** : alwaysApply: true dans le yaml-header de la règle, YYYY-MM-DD défini selon @date-awareness
+- **FORMAT** : formattage du texte selon @markdown-formatting-standards
+- **CONTENU** : règle structurée avec le contenu selon les templates concernés telle qu'elle doit être appliquée au moment, pas d'historique des changements apportés, pas d'historique des contenus dépréciés qui sont gérés selon @summary-governance
+
+#### Validation
+
+- Vérifier que le formatage du contenu est conforme et valable selon @markdown-formatting-standards, signaler les non conformités qui ne peuvent pas être ajustées, corriger les non conformités de formes qui peuvent être ajustées sans perte de valeur
+- Vérifier que la date de dernière mise à jour (> Dernière mise à jour : [YYYY-MM-DD]) est modifiée à la date du jour conformément à @date-awareness
+- Vérifier que les liens vers des règles ou des fichiers pointent effectivement sur des règles et fichiers existants et accessibles
+

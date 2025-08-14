@@ -1,0 +1,195 @@
+---
+description: Gouvernance du format yaml-header des règles MDC selon documentation officielle Cursor
+alwaysApply: true
+---
+
+# yaml-header-governance : Gouvernance du format yaml-header des règles MDC selon documentation officielle Cursor
+
+> Créé le : 2025-01-03  
+> Dernière mise à jour : 2025-01-03
+
+## Objectifs de la règle
+
+**STANDARDISER** : Établir des contraintes précises basées sur la documentation officielle Cursor pour le format yaml-header des règles MDC
+**ÉVITER ERREURS** : Prévenir les problèmes d'encoding et de parsing lors de la génération ou modification de règles par les agents IA
+**GARANTIR CONFORMITÉ** : Assurer que toutes les règles respectent le format officiel yaml-header documenté par Cursor
+
+## Problèmes résolus/à résoudre
+
+- Absence de contraintes formelles sur le format yaml-header causant des erreurs de parsing
+- Problèmes d'encoding lors de la génération automatique de règles par les agents IA
+- Incohérences dans l'utilisation des champs yaml entre différentes règles
+- Méconnaissance des champs officiellement supportés par Cursor
+
+## Comportement général attendu
+
+- L'IA génère systématiquement des yaml-headers conformes à la documentation officielle Cursor
+- L'IA valide le format yaml-header avant toute modification de règle
+- L'IA signale toute non-conformité détectée dans les yaml-headers existants
+- L'IA utilise exclusivement les champs documentés officiellement
+
+## Contexte d'application et généralités
+
+Cette règle s'appuie sur la **documentation officielle Cursor** disponible sur [docs.cursor.com](https://docs.cursor.com/fr/context/rules) qui définit le format MDC (`.mdc`) pour les règles Cursor, la spécification YAML : [yaml.org](https://yaml.org/) et la syntaxe Glob : [glob patterns documentation](https://en.wikipedia.org/wiki/Glob_(programming)).
+
+Les fichiers de règles utilisent le format MDC officiel qui supporte :
+- **Métadonnées** : En-tête YAML (frontmatter) entre `---`
+- **Contenu** : Corps de la règle en Markdown
+- **Références aux règles** : Fichiers référencés avec le préfixe `@`, sans extension nécessaire
+
+## Règles à appliquer
+
+### Structure yaml-header obligatoire
+
+#### Règles obligatoires à appliquer
+
+- **DÉLIMITEURS** : L'en-tête YAML DOIT être encadré par `---` au début et à la fin
+- **POSITION** : L'en-tête YAML DOIT être au tout début du fichier (première ligne)
+- **FORMAT** : L'en-tête DOIT respecter la syntaxe YAML valide
+- **ENCODING** : L'en-tête DOIT utiliser l'encoding UTF-8 sans BOM
+- **PAS DE BACKTICKS** : Ne jamais mettre de ``` après ou avant les délimiteurs ---, ils sont déclarés dans les exemples ci-dessous en tant que format markdown de la règle elle-même pas en tant qu'élément à répliquer lors des générations
+
+### Distinction règles générales vs spécifiques
+
+#### Règles obligatoires à appliquer
+
+**RÈGLES GÉNÉRALES** (s'appliquent toujours) :
+
+- `alwaysApply: true` obligatoire
+- `description` recommandé
+- `globs` non nécessaire (s'applique à tous les fichiers)
+- Usage : Règles de gouvernance, standards généraux
+
+**RÈGLES SPÉCIFIQUES** (s'appliquent selon contexte) :
+
+- `alwaysApply: false` obligatoire
+- `description` obligatoire
+- `globs` obligatoire (pour que Cursor sache quand activer)
+- Usage : Règles par type de fichier, par composant
+
+### Champs officiels supportés
+
+#### Règles obligatoires à appliquer
+
+Selon la documentation officielle Cursor, les champs suivants sont supportés :
+
+- **`description`** :
+
+  - Type : string
+  - Obligatoire : Oui pour alwaysApply: false, recommandé pour alwaysApply: true
+  - Usage : Brève description de la règle
+  - Contrainte : Une ligne, sans caractères spéciaux YAML non échappés
+
+- **`globs`** :
+
+  - Type : string ou array de strings
+  - Obligatoire : Oui pour alwaysApply: false, non nécessaire pour alwaysApply: true
+  - Usage : Motifs glob définissant les fichiers concernés
+  - Exemples valides : `"*.ts"`, `["*.js", "*.jsx"]`, `"src/**/*.py"`
+  - Contrainte : Doit être un pattern glob valide
+
+- **`alwaysApply`** :
+  - Type : boolean
+  - Obligatoire : Oui (fortement recommandé)
+  - Valeurs : `true` ou `false` uniquement (sans quotes)
+  - Usage : Détermine si la règle s'applique automatiquement
+  - Par défaut : `false` si non spécifié
+
+#### Comportements interdits/proscrits/à éviter
+
+- **CHAMPS NON DOCUMENTÉS** : Ne pas ajouter de champs non documentés officiellement
+- **SYNTAXE INVALIDE** : Ne pas utiliser de syntaxe YAML invalide (indentation incorrecte, etc.)
+- **CARACTÈRES SPÉCIAUX** : Ne pas utiliser de caractères spéciaux non échappés dans les valeurs
+- **ESPACES TRAILING** : Ne pas laisser d'espaces en fin de ligne dans l'en-tête
+- **TABS** : Ne pas utiliser de tabulations, uniquement des espaces
+- **COMMENTAIRES** : Éviter les commentaires dans l'en-tête YAML
+- **BACKTICKS** : Ne jamais entourer l'en-tête de backticks
+- **PLACEHOLDERS** : Ne pas laisser de placeholders comme [valeur] dans le YAML final
+
+#### Validation
+
+- **VALIDER YAML** : Vérifier que l'en-tête est du YAML valide, vérifier présence des délimiteurs `---`, Valider la syntaxe YAML
+- **VÉRIFIER CHAMPS** : S'assurer que seuls les champs officiels sont utilisés, valider les types de données (string, boolean, array), vérifier que les champs obligatoires sont présents selon le type de règle
+- **CONTRÔLER TYPES** : Valider que les types de données correspondent
+- **CORRIGER ENCODING** : S'assurer de l'UTF-8 sans BOM
+- **VÉRIFIER COHÉRENCE** : S'assurer que globs est présent si alwaysApply: false, Valider les patterns glob si présents
+
+#### Exemples
+
+##### ✅ Correct - Règles générales
+
+```yaml
+---
+description: Gouvernance générale du projet
+alwaysApply: true
+---
+```
+
+```yaml
+---
+description: Standards de formatage Markdown
+alwaysApply: true
+---
+```
+
+##### ✅ Correct - Règles spécifiques
+
+```yaml
+---
+description: Règle de formatage TypeScript générale mais appliquée uniquement à TypeScript
+globs: "*.ts"
+alwaysApply: false
+---
+```
+
+```yaml
+---
+description: Standards de code Python générale mais appliquée uniquement à Python
+globs: ["*.py", "*.pyw"]
+alwaysApply: false
+---
+```
+
+```yaml
+---
+description: Configuration pour composants React mais appliquée uniquement à React
+globs: "src/components/**/*.tsx"
+alwaysApply: false
+---
+```
+
+##### ❌ Incorrect
+
+```yaml
+---
+description: Règle de test
+enabled: true  # ❌ Champ non documenté
+alwaysApply: true
+---
+```
+
+```yaml
+description: Sans délimiteurs  # ❌ Manque les ---
+alwaysApply: true
+```
+
+```yaml
+---
+description: "Règle avec: caractères spéciaux non échappés"  # ❌ Dois échapper le :
+alwaysApply: "true"  # ❌ Doit être boolean, pas string
+---
+```
+
+```yaml
+---
+description: Règle spécifique sans globs
+alwaysApply: false  # ❌ Manque globs pour une règle spécifique
+---
+```
+
+```yaml
+---
+description: [Description de la règle]  # ❌ Placeholder non remplacé
+alwaysApply: true
+---
+```

@@ -1,0 +1,59 @@
+---
+alwaysApply: true
+---
+
+# cursor-workspace-governance.mdc : Gestion des workspaces cursor
+
+> Créé le : [2025-08-07]  
+> Dernière mise à jour : [2025-08-07]
+
+## Objectifs de la règle
+
+- Définir l'organisation des workspaces cursor en lien avec les projets gérés dans github.com
+- Assurer que les règles de gouvernance générales sont définies centralement et appliquées à tous les projets au moyen d'un projet dédié commun projects-common dans github.com
+
+### Problèmes résolus/à résoudre
+
+- Eviter de devoir recréer et reconfigurer les workspaces pour chaque contexte d'utilisation
+- Eviter des perdre des configurations générales utiles de l'éditeur pour chaque contexte d'utilisation
+
+### Comportement général attendu
+
+- L'utilisateur cursor créé un nouveau projet dans cursor en clonant un dépôt distant github.com dédié au workspace en création (File/New Window/Clone Repo)
+- L'utilisateur ajoute le projet projects-common au workspace (File/Add Folder to Workspace)
+- L'utilisateur copie les règles contenues dans projects-common/.cursor/rules dans workspace/.cursor/rules de manière à les rendre visible et faire appliquer par l'IA
+- L'utilisateur ajoute les projets nécessaire au contexte d'utilisation au workspace (File/Add Folder to Workspace)
+- L'utilisateur sauvegarde la configuration du workspace (File/Save Workspace as)
+- L'utilisateur réouvre le workspace à l'aide du fichier *.code-workspace ou à partir du répertoire git local qui correspond au dépôt distant github.com dédié au workspace
+
+## Contexte d'application et généralités
+
+## Règles à appliquer
+
+### Workspaces et projets github.com correspondants
+
+#### Règles obligatoires à appliquer
+
+- **PREFIXER** : Les workspaces et les projets github.com correspondants sont préfixés avec "cursor-ws-"
+- **RESERVER USAGE** : Les projets github.com dédiés à des workspaces ne contiennent que le fichier de configuration du workspace *.code-workspace et les éventuelles configurations de l'éditeur spécifiques à celui-ci
+- **ASSURER COHERENCE NOMMAGE** : Les noms des projets github.com dédiés à des workspaces, le nom du workspace et le nom du fichier de configuration du workspace sont identiques (sauf les extensions)
+
+#### Comportements interdits/proscrits/à éviter
+
+- **CASSER COHERENCE NOMMAGE** : Modifier le nom du workspace, le nom du dépôt distant github.com ou le répertoire local git correspondant ou le nom du fichier de configuration du workspace sans respecter la cohérence de nommage
+- **POLLUER/MELANGER USAGE** : Ajouter des contenus propres aux projets dans un projet dédié à un workspace
+
+#### Validation
+
+- Le nom du workspace au haut de la hierarchie de l'explorateur correspond au nom du répertoire local git, au nom du dépôt distant github.com et au nom du fichier de configuration avec l'extension *.code-workspace enregistré à la racine de ceux-ci
+- le fichier de configuration du workspace est le seul élément contenu dans le projet dédié au workspace avec README.md et d'éventuels fichiers de configuration de l'éditeur
+
+#### Exemples
+
+##### ✅ Correct
+
+Nom du workspace : cursor-ws-all-projects
+Nom du fichier de configuration du workspace : cursor-ws-all-projects.code-workspace
+Nom du répertoire local git dédié au workspace : cursor-ws-all-projects
+Nom du dépôt distant github.com : cursor-ws-all-projects
+Contenus synchronisés git et github.com : cursor-ws-all-projects.code-workspace + README.md + .cursor/rules/*.*

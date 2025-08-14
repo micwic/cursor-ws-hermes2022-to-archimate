@@ -1,0 +1,155 @@
+---
+alwaysApply: true
+---
+
+# markdown-formatting-standards.mdc : Standards de formatage Markdown à appliquer aux règles (règles de gouvernance et spécifications)
+> Créé le : 2025-07-03
+> Dernière mise à jour : 2025-07-05 
+
+## Objectif de la Règle
+
+### Problème Résolu
+
+Erreurs markdownlint (MD022, MD032, MD041, etc.) causées par formatage markdown non conforme aux standards
+
+### Comportement Attendu
+
+L'IA applique un formatage markdown conforme aux standards markdownlint à toutes les règles de gouvernance et à toutes les spécifications
+
+# Contexte d'application et généralités
+
+- Règles de gouvernance
+- Spécifications
+- Documentation utilisateur
+
+## Règles à appliquer
+
+### Formatage à respecter
+
+#### Règles obligatoires à appliquer
+
+- **Espaces autour titres** : Ligne vide avant ET après chaque titre (MD022)
+- **Espaces autour listes** : Ligne vide avant ET après chaque liste (MD032)
+- **Indentation cohérente** : 2 espaces pour listes imbriquées (MD007)
+- **Longueur lignes** : Maximum 80 caractères par ligne (MD013)
+- **Espace en fin de ligne** : Pas d'espace en fin de ligne (MD009)
+- **Listes cohérentes** : Espace après tirets/astérisques (MD006)
+- **Liens valides** : URLs valides et accessibles (MD011)
+
+##### Comportements interdits/proscrits/à éviter
+
+- **Titres sans espace** : Titres collés au contenu précédent/suivant
+- **Listes sans espace** : Listes collées au contenu précédent/suivant
+- **Listes mal formatées** : Espace manquant après marqueurs liste
+- **Lignes trop longues** : Dépassement 80 caractères
+- **Indentation incohérente** : Mélange espaces/tabulations
+
+
+## Instructions pour l'IA
+
+### À Faire Systématiquement
+
+1. Vérifier espacement autour titres (ligne vide avant/après)
+2. Vérifier espacement autour listes (ligne vide avant/après)
+3. Respecter limite 80 caractères par ligne
+4. Utiliser indentation cohérente (2 espaces)
+5. **APPLIQUER IMMÉDIATEMENT** : Formater selon règles lors ajout contenu
+6. Valider formatage avant commit
+7. Préserver en-tête YAML (quand présent) de toute modification
+8. Distinguer règles Always Apply (en-tête YAML) vs Manual Apply (pas d'en-tête)
+
+### À Éviter Absolument
+
+1. Titres sans espacement approprié
+2. Listes sans espacement approprié
+3. Lignes dépassant 80 caractères
+4. Indentation incohérente
+5. Listes mal formatées
+6. **ERREUR CRITIQUE** : Ajouter contenu sans appliquer règles formatage
+7. Modifier l'en-tête YAML lors du formattage
+8. Supprimer l'en-tête YAML des règles Always Apply
+
+### Validation
+
+- Titres entourés lignes vides (MD022)
+- Listes entourées lignes vides (MD032)
+- Lignes ≤ 80 caractères
+- Indentation 2 espaces cohérente
+- Listes correctement formatées
+- En-tête YAML préservé (règles Always Apply)
+- Distinction claire Always Apply vs Manual Apply
+
+## Exemples
+
+### ✅ Correct
+
+```markdown
+## Titre de Section
+
+Contenu avec espacement approprié.
+
+### Sous-section
+
+Texte avant liste avec ligne vide.
+
+- Liste correctement formatée
+  - Sous-élément indenté
+- Autre élément
+
+Texte après liste avec ligne vide.
+```
+
+### ❌ Incorrect
+
+```markdown
+## Titre sans espace
+Contenu collé au titre
+### Sous-titre sans espace
+Texte collé à la liste
+- Liste mal formatée
+  - Sous-élément mal indenté
+- Autre élément
+Texte collé après liste
+```
+
+### 🚨 Erreur Réelle Session 2025-07-05
+
+**Violation** : Ajout section Jest-Cucumber sans appliquer règle MD032
+
+```markdown
+
+### Principe Jest-Cucumber
+
+**Finalité** : Expressivité Gherkin + Infrastructure Jest existante
+- Scénarios métier en syntaxe Gherkin (fichiers `.feature`)  # ❌ Pas de ligne vide avant
+- Implémentation avec Jest (mocks, assertions, infrastructure)
+- Exécution uniforme `yarn test` (pas de runner séparé)
+
+### Avantages Jest-Cucumber
+
+- ✅ **Expressivité métier** : Scénarios compréhensibles par tous  # ❌ Pas de ligne vide avant/après
+```
+
+**Leçon** : TOUJOURS appliquer immédiatement les règles lors de l'ajout de contenu
+
+## Contexte Projet Spécifique
+
+### Application dans le projet
+
+Tous les fichiers .mdc (règles Cursor + spécifications) doivent respecter ces standards
+
+### Intégration avec Autres Règles
+
+- Complète `yaml-header-integrity.mdc` pour qualité globale
+- Assure cohérence avec `specifications-template.mdc`
+
+## Maintenance
+
+### Revue à effectuer
+
+- Validation formatage avant modification
+- Correction erreurs markdownlint détectées
+
+### Évolution à prévoir
+
+Extension standards si nouveaux besoins markdownlint

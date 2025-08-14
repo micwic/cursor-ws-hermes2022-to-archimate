@@ -1,0 +1,36 @@
+---
+description: Gestion correcte de la date du jour par l'IA
+alwaysApply: true
+---
+
+# current-date-awareness.mdc : Gestion correcte de la date du jour par l'IA
+
+> Créé le : [2025-08-13]  
+> Dernière mise à jour : [2025-08-13]
+
+## Objectifs de la règle
+
+- Faire en sorte que les dates de création et mise à jour pour les générations par l'IA utilise la date du jour effective
+
+## Problèmes résolus/à résoudre
+
+- Les modèles LLM considèrent leur date de constitution comme la date actuelle, ce qui génère des erreurs de datation lorsque la date actuelle doit être utilisée.
+
+## Comportement général attendu
+
+- Cursor et l'IA intégrée à Cursor s'assurent au démarrage et régulièrement de connaître la date actuelle à partir de l'hôte qui exécute Cursor
+
+## Contexte d'application et généralités
+
+- la date actuelle est la date actuelle de l'hôte qui exécute Cursor
+
+## Règles à appliquer
+
+### Date actuelle
+
+#### Règles obligatoires à appliquer
+
+- **OBTENIR DATE SYSTÈME** : Demander systématiquement et obligatoirement au système hôte qui héberge Cursor la date actuelle, au démarrage du cursor, avant une génération de contenu par l'IA
+- **Commande PowerShell** : `Get-Date -Format yyyy-MM-dd`
+- **Commande Node.js** : `new Date().toISOString().split('T')[0]`
+- **Commande Terminal** : `date +%Y-%m-%d`
