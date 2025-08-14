@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../hermes2022-to-archimate"
+		},
+		{
+			"path": "../projects-common"
 		}
 	],
 	"settings": {}

@@ -57,3 +57,18 @@ Nom du fichier de configuration du workspace : cursor-ws-all-projects.code-works
 Nom du répertoire local git dédié au workspace : cursor-ws-all-projects
 Nom du dépôt distant github.com : cursor-ws-all-projects
 Contenus synchronisés git et github.com : cursor-ws-all-projects.code-workspace + README.md + .cursor/rules/*.*
+
+### Cycle d'administration des règles de gouvernance
+
+#### Règles obligatoires à appliquer
+
+- **ADMINISTRATION CENTRALE** : Les règles de gouvernance générales sont administrées uniquement dans le projet projects-common
+- **RECOPIE TEMPORAIRE** : projects-common est ajouté au workspace uniquement pour la mise à jour des règles
+- **RETRAIT OBLIGATOIRE** : projects-common est retiré du workspace après recopie des règles pour éviter les confusions
+- **APPLICATION LOCALE** : Les règles recopiées dans workspace/.cursor/rules sont appliquées globalement par l'IA
+
+#### Comportements interdits/proscrits/à éviter
+
+- **ADMINISTRATION DIRECTE** : Ne jamais modifier les règles directement dans le workspace
+- **PERSISTANCE PROJECTS-COMMON** : Ne jamais laisser projects-common dans le workspace en production
+- **MELANGE SOURCES** : Ne jamais mélanger l'administration des règles avec l'utilisation du workspace
