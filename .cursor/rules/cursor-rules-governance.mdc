@@ -1,11 +1,12 @@
 ---
+description: "Définition, gestion et application des règles (rules) intégrée à cursor"
 alwaysApply: true
 ---
 
-# cursor-rules-governance : Définition, gestion et application des règles (rules) intégrée à cursor
+# cursor-rules-governance.mdc : Définition, gestion et application des règles (rules) intégrée à cursor
 
-> Créé le : [2025-08-06]  
-> Dernière mise à jour : [2025-08-06]
+> Créé le : [2025-08-14]  
+> Dernière mise à jour : [2025-08-14]
 
 ## Objectifs de la règle
 

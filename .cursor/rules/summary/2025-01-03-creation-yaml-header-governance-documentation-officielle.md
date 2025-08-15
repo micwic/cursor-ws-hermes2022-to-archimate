@@ -93,3 +93,4 @@ L'utilisateur a demandé s'il existe une documentation officielle Cursor sur le 
 
 ✅ **Mission accomplie** : Règle yaml-header-governance créée avec succès basée sur documentation officielle Cursor, fournissant les contraintes précises demandées pour éviter les problèmes d'encoding par les agents IA.
 
+

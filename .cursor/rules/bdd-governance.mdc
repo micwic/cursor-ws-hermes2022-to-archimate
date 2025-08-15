@@ -1,3 +1,61 @@
 ---
+description: "Gouvernance des spécifications détaillées selon les principes Behavior Driven Development"
 alwaysApply: true
 ---
+
+# bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
+
+> Créé le : [2025-08-14]  
+> Dernière mise à jour : [2025-08-14]
+
+## Objectifs de la règle
+
+- Définir la gouvernance des spécifications détaillées selon les principes Behavior Driven Development
+- Assurer la cohérence entre les spécifications générales et les spécifications détaillées
+- Éviter la redondance et l'incohérence dans l'élaboration des spécifications
+
+## Problèmes résolus/à résoudre
+
+- Confusion entre spécifications générales et spécifications détaillées
+- Redondance entre différents niveaux de spécifications
+- Manque de cohérence dans l'approche BDD
+
+## Comportement général attendu
+
+- L'IA distingue clairement les spécifications générales des spécifications détaillées
+- L'IA applique les principes BDD pour les spécifications détaillées
+- L'IA maintient la cohérence avec les spécifications générales
+
+## Contexte d'application et généralités
+
+- Les spécifications détaillées sont issues des processus itératifs des principes Behavior Driven Development
+- Elles complètent et détaillent les spécifications générales sans les remplacer
+- Elles respectent les principes de ségrégation des domaines
+
+## Règles à appliquer
+
+### Spécifications détaillées BDD
+
+#### Règles obligatoires à appliquer
+
+- **RESPECTER HIÉRARCHIE** : Les spécifications détaillées respectent la hiérarchie des spécifications générales
+- **APPLIQUER BDD** : Utiliser les principes Behavior Driven Development pour l'élaboration
+- **MAINTENIR COHÉRENCE** : Assurer la cohérence avec les spécifications parentes
+
+#### Comportements interdits/proscrits/à éviter
+
+- **REDONDANCE** : Ne pas dupliquer les spécifications générales
+- **INCOHÉRENCE** : Ne pas créer de spécifications contradictoires avec les générales
+- **SURSPÉCIFICATION** : Éviter le détail excessif non nécessaire
+
+#### Validation
+
+- Vérifier la cohérence avec les spécifications générales
+- Valider l'application des principes BDD
+- Contrôler l'absence de redondance
+
+### Évolution à prévoir
+
+- Extension des principes BDD selon l'évolution du projet
+- Adaptation des spécifications détaillées aux nouveaux besoins
+# bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development

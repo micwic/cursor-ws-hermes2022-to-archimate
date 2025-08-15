@@ -1,11 +1,12 @@
 ---
+description: "Gouvernance des résumés de session de génération par l'IA - Uniforme pour les règles de gouvernance et les spécifications"
 alwaysApply: true
 ---
 
-# cursor-rules-summary-governance : Gouvernance des résumés de session de génération par l'IA - Uniforme pour les règles de gouvernance et les spécifications
+# cursor-rules-summary-governance.mdc : Gouvernance des résumés de session de génération par l'IA - Uniforme pour les règles de gouvernance et les spécifications
 
-> Créé le : [2025-08-06]  
-> Dernière mise à jour : [2025-08-06]
+> Créé le : [2025-08-14]  
+> Dernière mise à jour : [2025-08-14]
 
 ## Objectifs de la règle
 

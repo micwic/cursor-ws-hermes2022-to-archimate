@@ -1,12 +1,12 @@
 ---
-description: Gouvernance du format yaml-header des règles MDC selon documentation officielle Cursor
+description: "Gouvernance du format yaml-header des règles MDC selon documentation officielle Cursor"
 alwaysApply: true
 ---
 
-# yaml-header-governance : Gouvernance du format yaml-header des règles MDC selon documentation officielle Cursor
+# yaml-header-governance.mdc : Gouvernance du format yaml-header des règles MDC selon documentation officielle Cursor
 
-> Créé le : 2025-01-03  
-> Dernière mise à jour : 2025-01-03
+> Créé le : [2025-08-14]  
+> Dernière mise à jour : [2025-08-14]
 
 ## Objectifs de la règle
 

@@ -1,11 +1,12 @@
 ---
+description: "Gestion des workspaces cursor"
 alwaysApply: true
 ---
 
 # cursor-workspace-governance.mdc : Gestion des workspaces cursor
 
-> Créé le : [2025-08-07]  
-> Dernière mise à jour : [2025-08-07]
+> Créé le : [2025-08-14]  
+> Dernière mise à jour : [2025-08-14]
 
 ## Objectifs de la règle
 

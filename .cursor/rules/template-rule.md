@@ -1,4 +1,4 @@
-# [rule-file-name]: [Dénomination de la règle]
+# [rule-file-name].mdc: [Dénomination de la règle]
 
 > Créé le : [YYYY-MM-DD]  
 > Dernière mise à jour : [YYYY-MM-DD]
