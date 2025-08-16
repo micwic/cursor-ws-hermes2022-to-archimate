@@ -1,4 +1,6 @@
-# [path][specification-file-name].mdc: [Dénomination de la spécification]
+# [specification-file-name].mdc: [Dénomination de la spécification]
+
+Chemin : [path]
 
 > Créé le : [YYYY-MM-DD]  
 > Dernière mise à jour : [YYYY-MM-DD]
@@ -32,29 +34,29 @@
 | `fichier.js` | Code | Description de la finalité |
 | `fichier.json` | Configuration | Description de la finalité |
 
-## Décisions architecturale et technique
+## Décisions architecturales et techniques
 
 ### [Enoncé abréggé de la décision n]
 
-#### Description détaillée de la décision
+#### Description détaillée pour [Enoncé abréggé de la décision n]
 
-[Description détaillée de la décision n]
+[YY-MM-DD] [Description détaillée de la décision n]
 
-#### Justification de la décision
+#### Justification pour [Enoncé abréggé de la décision n]
 
 [Description de la justification de la décision n]
 
-#### Patterns validés à suivre suite à la décision
+#### Patterns validés à suivre pour [Enoncé abréggé de la décision n]
 
 - **[Pattern n] :** [description + exemple]
 - **[Pattern n+1] :** [description + exemple]
 
-#### Anti-Patterns en raison d'erreurs identifiées, à ne pas reproduire
+#### Anti-Patterns en raison d'erreurs identifiées, à ne pas reproduire pour [Enoncé abréggé de la décision n]
 
 - **[Erreur n] :** [description] → **Solution :** [approche correcte] → **Règle à adopter pour éviter :** [Règle|pattern à adopter]
 - **[Erreur n+1] :** [description] → **Solution :** [approche correcte] → **Règle à adopter pour éviter :** [Règle|pattern à adopter]
 
-#### État d'implémentation de la décision 
+#### État d'implémentation de [Enoncé abréggé de la décision n]
 
 [✅ [Fonctionnalité réalisée]|🚧 [En cours de conception et réalisation]|❌ [Abandonné/Suspendu - Raison]]
 

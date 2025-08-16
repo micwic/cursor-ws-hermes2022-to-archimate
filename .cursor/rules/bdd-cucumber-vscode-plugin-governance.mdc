@@ -1,0 +1,136 @@
+---
+description: Gouvernance de la configuration Cucumber et du plugin VSCode pour les projets BDD
+globs: ["**/__tests__/**/*.feature", "**/__tests__/**/*.steps.{js,ts}", "**/cucumber.js", "**/jest.config.js"]
+alwaysApply: false
+---
+
+# bdd-cucumber-vscode-plugin-governance.mdc : Configuration Cucumber et plugin VSCode pour projets BDD
+
+> Créé le : [2024-12-28]  
+> Dernière mise à jour : [2024-12-28]
+
+## Objectifs de la règle
+
+- **STANDARDISER** : Configuration homogène Cucumber/Jest-Cucumber entre projets BDD
+- **CENTRALISER** : Gestion unique dans projects-common des configurations
+- **OPTIMISER** : Application sélective uniquement aux projets utilisant BDD
+
+## Problèmes résolus/à résoudre
+
+- Duplication de configuration entre projets
+- Incohérence des patterns de fichiers entre projets
+- Configuration manuelle répétitive du plugin VSCode
+
+## Comportement général attendu
+
+- Configuration copiée depuis projects-common vers workspaces qui intègre BDD
+- Structure `__tests__/` cohérente à chaque niveau de projet ([project|domain|module|component|component-{behavior}] )
+- Cucumber et plugin Cucumber VSCode configuré identiquement dans tous les projets BDD
+
+## Contexte d'application et généralités
+
+Règle appliquée **uniquement** aux projets utilisant BDD avec structure organisée par niveau de test à chaque niveau de la hierarchie de projet:
+
+- **Tests d'intégration** : `__tests__/integration/` avec `.feature` et `.steps.js`
+- **Tests E2E** : `__tests__/e2e/` avec `.feature` et `.steps.js`  
+- **Tests unitaires** : `__tests__/unit/` avec `.test.js` (Jest standard)
+- **Steps partagées** : `__tests__/shared/` avec `.steps.js` communes
+- **Support files** : `__tests__/support/` avec configurations et helpers
+
+## Règles à appliquer
+
+### Structure des tests BDD
+
+#### Règles obligatoires à appliquer
+
+- **FEATURES INTÉGRATION** : `[niveau]/__tests__/integration/[nom-test].feature`
+- **STEPS INTÉGRATION** : `[niveau]/__tests__/integration/[nom-test].steps.js`
+- **FEATURES E2E** : `[niveau]/__tests__/e2e/[scenario].feature`
+- **STEPS E2E** : `[niveau]/__tests__/e2e/[scenario].steps.js`
+- **TESTS UNITAIRES** : `[niveau]/__tests__/unit/[module].test.js`
+- **STEPS PARTAGÉES** : `[niveau]/__tests__/shared/[domaine].steps.js`
+- **SUPPORT FILES** : `[niveau]/__tests__/support/[helper].js`
+- **LANGUE** : Déclaration `# language: fr` en début de feature
+
+#### Comportements interdits/proscrits/à éviter
+
+- **PAS DE CENTRALISATION** : Ne pas créer de répertoire features/ global
+- **PAS DE MÉLANGE** : Ne pas mélanger tests unitaires et BDD
+- **PAS DE DUPLICATION** : Ne pas dupliquer les steps definitions
+
+### Configuration du plugin VSCode
+
+#### Règles obligatoires à appliquer
+
+- **COPIER SETTINGS** : Intégrer dans `.code-workspace` :
+
+  ```json
+  "cucumber.features": [
+    "**/__tests__/integration/**/*.feature",
+    "**/__tests__/e2e/**/*.feature"
+  ],
+  "cucumber.glue": [
+    "**/__tests__/integration/**/*.steps.{js,ts}",
+    "**/__tests__/e2e/**/*.steps.{js,ts}",
+    "**/__tests__/shared/**/*.steps.{js,ts}"
+  ]
+  ```
+
+- **ASSOCIATION FICHIERS** : Associer `.feature` au langage cucumber
+- **FORMATAGE** : Auto-format on save, tabulation 2 espaces
+
+### Configuration Jest-Cucumber
+
+#### Règles obligatoires à appliquer
+
+- **FICHIER CONFIG** : `jest-cucumber.config.js` à la racine du projet (copié depuis projects-common)
+- **PATTERNS BDD** :
+  - `**/__tests__/integration/**/*.steps.js`
+  - `**/__tests__/e2e/**/*.steps.js`
+- **PATTERNS UNITAIRES** : `**/__tests__/unit/**/*.test.js`
+- **SETUP** : `<rootDir>/__tests__/support/jest-cucumber-setup.js`
+
+#### Validation
+
+- Vérifier présence `cucumber.features` dans workspace settings
+- Vérifier cohérence globs avec structure `integration/` et `e2e/`
+- Vérifier déclaration `# language: fr` dans features
+- Vérifier séparation claire unit/integration/e2e
+
+#### Exemples
+
+##### ✅ Correct
+
+```text
+hermes-parser/
+├── __tests__/
+│   ├── integration/
+│   │   ├── parser-validation.feature
+│   │   └── parser-validation.steps.js
+│   ├── e2e/
+│   │   ├── full-parsing-workflow.feature
+│   │   └── full-parsing-workflow.steps.js
+│   ├── unit/
+│   │   └── parser-utils.test.js
+│   ├── shared/
+│   │   └── parsing-common.steps.js
+│   └── support/
+│       ├── jest-cucumber-setup.js
+│       └── test-data/
+└── src/
+    └── index.js
+```
+
+##### ❌ Incorrect
+
+```text
+hermes-parser/
+├── features/                        # ❌ Mauvaise localisation
+│   └── parser.feature
+├── steps/                           # ❌ Steps séparées
+│   └── parser.steps.js
+├── __tests__/
+│   ├── parser.feature               # ❌ Mélange BDD/unitaires
+│   ├── parser.steps.js
+│   └── parser.test.js
+```

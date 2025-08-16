@@ -6,7 +6,7 @@ alwaysApply: true
 # specification-governance.mdc : Définition, gestion et application des spécifications (règles) à la génération de code pour le projet, pour les domaines ou modules du projet et les composants sous-jacents du projet
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : [2025-08-14] 
+> Dernière mise à jour : [2025-08-16]
 
 ## Objectifs de la règle
 
@@ -30,7 +30,7 @@ alwaysApply: true
 - L'utilisateur élabore les spécifications initiales pour le projet, pour les domaines et les modules du projet ainsi que pour composants sous-jacents du projet
 - L'utilisateur et l'IA s'assure rigoureusement de ne pas créer de redondance entre les différents niveaux de la hierarchie de projet, chaque niveau spécifie uniquement son propre périmètre
 
-# Contexte d'application et généralités
+## Contexte d'application et généralités
 
 - La règle s'applique aux spéficiations générales du projet, des domaines et des modules du projet et pour les composants sous-jacents du projet
 
@@ -38,7 +38,7 @@ alwaysApply: true
 
 ### Localisation et dénomination des spécifications générales
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires pour localisation et dénomination
 
 - **Règle générale de localisation** : Le fichier de spécification générale est localisé dans le sous-répertoire .cursor/rules du répertoire de la hierarchie de projet pour lequel la spéfication est élaborée
 - **Règle générale de nommage** : Le fichier est prefixé et nommé avec l'élément spécifié comme suit `specification-{element}.mdc`. L'élément est le projet, le domaine ou le module du projet ou un composant sous-jacents du projet. Le nom de l'élément est le nom du répertoire parent de .cusor/rules. En présence de cas complexe, pour éviter des spéfications trop volumineuses, un sujet peut être défini comme suffixe à l'élément pour spécifier un comportement particulier de l'élément comme suit `specification-{element}-{subject}.mdc`. Le chemin de la localisation et associé au nom de la spécification conformément à @template-specification.md pour éviter des confusions.
@@ -63,10 +63,11 @@ alwaysApply: true
 
 - **Historisation** : Les spécifications ne servent pas d'historique, l'historisation des changements de spécifications s'effectue selon @cursor-rules-summary-governance
 - **Surspécification** : Eviter d'alourdir les spécifications avec des informations sans valeur ajoutée (overspecification, gold plating, bloat) qui ne sont pas purement des spécifications.
+- **Titre avec chemin complet** : Éviter d'inclure le chemin complet dans le titre H1 → **Solution** : Séparer nom de fichier et chemin → **Règle à adopter** : Utiliser le format du template avec "Chemin :" sur ligne séparée pour la lisibilité
 
 ### Elaboration et modification du contenu des spécifications
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires pour l'élaboration et modification
 
 - **Spécifications lisibles** en langage naturel dans la langue du projet selon format @markdown-formatting-standar à l'instar de @cursor-rules-governance
 - **Mettre à jour** la date de révision si modifiée

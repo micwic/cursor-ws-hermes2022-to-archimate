@@ -7,5 +7,67 @@
 			"path": "../hermes2022-to-archimate"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cucumber.features": [
+			"**/specs/features/**/*.feature",
+			"**/features/**/*.feature",
+			"**/tests/features/**/*.feature"
+		],
+		"cucumber.glue": [
+			"**/specs/step_definitions/**/*.{js,ts}",
+			"**/features/step_definitions/**/*.{js,ts}",
+			"**/tests/step_definitions/**/*.{js,ts}"
+		],
+		"cucumberautocomplete.steps": [
+			"**/specs/step_definitions/**/*.{js,ts}",
+			"**/features/step_definitions/**/*.{js,ts}"
+		],
+		"cucumberautocomplete.syncfeatures": "**/specs/features/**/*.feature",
+		"cucumberautocomplete.strictGherkinCompletion": true,
+		"cucumberautocomplete.strictGherkinValidation": true,
+		"cucumberautocomplete.smartSnippets": true,
+		"cucumberautocomplete.stepsInvariants": true,
+		"cucumberautocomplete.customParameters": [
+			{
+				"parameter": "{int}",
+				"value": "\\d+"
+			},
+			{
+				"parameter": "{string}",
+				"value": "\"[^\"]*\""
+			},
+			{
+				"parameter": "{word}",
+				"value": "[^\\s]+"
+			}
+		],
+		"cucumberautocomplete.pages": {
+			"hermes": "specs/pages/hermes/*Page.{js,ts}",
+			"archimate": "specs/pages/archimate/*Page.{js,ts}"
+		},
+		"cucumberautocomplete.formatConfOverride": {
+			"Fonctionnalité": 0,
+			"Contexte": 1,
+			"Scénario": 1,
+			"Plan du scénario": 1,
+			"Exemples": 2,
+			"Étant donné": 2,
+			"Quand": 2,
+			"Alors": 2,
+			"Et": 2,
+			"Mais": 2
+		},
+		"files.associations": {
+			"*.feature": "cucumber"
+		},
+		"editor.quickSuggestions": {
+			"comments": false,
+			"strings": true,
+			"other": true
+		},
+		"[cucumber]": {
+			"editor.formatOnSave": true,
+			"editor.tabSize": 2
+		}
+	}
 }

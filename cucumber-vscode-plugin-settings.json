@@ -1,0 +1,27 @@
+{
+    "cucumber.features": [
+      "**/__tests__/integration/**/*.feature",
+      "**/__tests__/e2e/**/*.feature"
+    ],
+    "cucumber.glue": [
+      "**/__tests__/integration/**/*.steps.{js,ts}",
+      "**/__tests__/e2e/**/*.steps.{js,ts}",
+      "**/__tests__/shared/**/*.steps.{js,ts}"
+    ],
+    "cucumber.parameterTypes": [
+      "**/__tests__/support/parameter-types.{js,ts}"
+    ],
+    "files.associations": {
+      "*.feature": "cucumber"
+    },
+    "[cucumber]": {
+      "editor.formatOnSave": true,
+      "editor.tabSize": 2,
+      "editor.insertSpaces": true
+    },
+    "editor.quickSuggestions": {
+      "comments": false,
+      "strings": true,
+      "other": true
+    }
+  }
