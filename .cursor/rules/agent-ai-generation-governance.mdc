@@ -1,0 +1,121 @@
+---
+description: "Gouvernance de la génération de contenu par l'IA avec validation préalable des spécifications"
+alwaysApply: true
+---
+
+# agent-ai-generation-governance.mdc: Gouvernance de la génération de contenu par l'IA
+
+> Créé le : 2025-08-18  
+> Dernière mise à jour : 2025-08-19
+
+## Objectifs de la règle
+
+- Assurer l'alignement des spécifications avec l'intention avant toute génération
+- Éviter les générations non conformes aux spécifications existantes
+- Garantir la validation utilisateur des plans d'exécution complexes
+- Maintenir la traçabilité des générations et de leurs résultats
+
+## Problèmes résolus/à résoudre
+
+- Générations IA non alignées avec les spécifications du projet
+- Modifications non coordonnées affectant plusieurs fichiers
+- Manque de traçabilité dans les plans d'exécution
+- Écart entre intention utilisateur et résultat généré
+
+## Comportement général attendu
+
+- L'IA vérifie systématiquement les spécifications avant génération
+- L'IA demande validation utilisateur pour les plans complexes
+- L'utilisateur valide les spécifications et plans avant exécution
+- L'IA trace les résultats obtenus après génération
+- L'IA ajuste le plan et les spécifications si nécessaire après une session de génération avec les compléments ou ajustements effectués en cours d'exécution
+
+## Contexte d'application et généralités
+
+- S'applique à toute génération de contenu par l'IA
+- Particulièrement critique pour les modifications multi-fichiers
+- Complète les règles @specification-governance et @cursor-rules-governance
+- Priorité sur les générations directes sans validation
+
+## Règles à appliquer
+
+### Génération de contenu avec validation préalable
+
+#### Règles obligatoires à appliquer
+
+- **MÉMORISER INTENTION** : Rappeler l'intention de l'utilisateur dans le plan d'exécution avec le prompt de l'utilisateur de l'IA
+- **VÉRIFIER SPÉCIFICATIONS** : Consulter et mettre à jour les spécifications du niveau hiérarchique concerné avant toute génération
+- **CRÉER PLAN** : Élaborer un plan d'exécution en format markdown (@markdown-formatting-standards) pour les générations multi-fichiers
+- **DOCUMENTER PLAN**: Etayer suffisamment le plan d'exécution sur le plan technique avec les décisions de conception envisagées pour mettre en oeuvre l'intention
+- **DEMANDER VALIDATION** : Obtenir validation explicite de l'utilisateur des spécifications et plans mis à jour avant génération
+- **LOCALISER** : Utiliser un sous-répertoire /execution-plan dans .cursor/rules pour stocker les plans d'exécution
+- **NOMMER PLAN** : Format obligatoire `YYYY-MM-DD-HH-MM-SS-{nom de la specification implémentée par le plan}-plan.md`
+- **TRACER EXÉCUTION** : Mettre à jour le plan avec ce qui a été fait et les résultats obtenus après génération
+- **AJUSTER PLAN et SPECIFICATIONS** : Ajuster le plan et les spécifications si nécessaire après une session de génération avec les compléments ou ajustements effectués en cours d'exécution
+
+#### Comportements interdits/proscrits/à éviter
+
+- **GÉNÉRATION DIRECTE** : Ne jamais générer sans vérifier les spécifications correspondantes
+- **PLAN IMPLICITE** : Ne pas procéder sans plan formalisé pour les modifications complexes
+- **VALIDATION ASSUMÉE** : Ne pas supposer l'accord utilisateur sans demande explicite
+- **TRAÇABILITÉ MANQUANTE** : Ne pas omettre la mise à jour du plan avec les résultats
+
+#### Validation
+
+- Spécifications consultées et alignées avec l'intention utilisateur
+- Plan d'exécution validé pour modifications multi-fichiers
+- Accord utilisateur explicite obtenu avant génération
+- Plan mis à jour avec résultats effectifs après exécution
+
+#### Exemples
+
+##### ✅ Correct — Intention: Ajouter la propriété "phases-concept" au schéma (projet `hermes2022-to-archimate`)
+
+Préconditions (hors plan) — déjà réalisées:
+
+- Spécifications pertinentes consultées et mises à jour si nécessaire
+- Intention clarifiée et validée avec l'utilisateur
+
+Plan d'exécution (fichier dans `.cursor/rules/execution-plan/2025-08-19-16-10-00-specification-hermes2022-extraction-files-plan.md`):
+
+1. Mise en oeuvre:
+   - Décrire précisément les ajustements techniques attendus (composants impactés, artefacts à modifier, impacts connexes)
+2. Validation:
+   - Préciser les critères de validation mesurables (ex.: conformité aux schémas en vigueur, contrôles d'intégrité)
+3. Traçabilité:
+   - Consigner ce qui a été fait, les décisions prises, les résultats obtenus
+4. Résumé:
+   - Créer un résumé dans `.cursor/rules/summary/2025-08-19-integration-phases-concept-schema.md`
+5. Ajustements:
+   - Mettre à jour le plan et/ou les spécifications si nécessaire (ex.: ajout d'un fichier d'overview `extraction-phases-overview.md`)
+   - Lier précisément ce qui a été ajouté/modifié et pourquoi
+
+##### ✅ Correct — Intention: Adapter les instructions d'extraction pour la phase "Execution"
+
+Préconditions (hors plan) — déjà réalisées:
+
+- Spécifications projet/module d'extraction à jour et validées
+- Intention clarifiée et validée avec l'utilisateur
+
+Plan d'exécution (fichier dans `.cursor/rules/execution-plan/2025-08-19-16-20-00-specification-hermes2022-concepts-site-extraction-plan.md`):
+
+1. Mise en oeuvre:
+   - Décrire les évolutions attendues des prompts/instructions et leur périmètre (phases concernées, alignements nécessaires)
+2. Validation:
+   - Énoncer les critères de cohérence avec les schémas de données et les contrôles associés
+3. Traçabilité:
+   - Consigner précisément actions, décisions, résultats
+4. Résumé:
+   - Créer un résumé dans `.cursor/rules/summary/2025-08-19-adaptation-prompts-execution.md`
+5. Ajustements:
+   - Mettre à jour le plan et/ou les spécifications si nécessaire (ex.: ajout d'un fichier d'overview si le besoin apparaît)
+   - Lier précisément ce qui a été ajouté/modifié et pourquoi
+
+##### ❌ Incorrect — Plan d'exécution non conforme
+
+- Ne pas respecter le format de nommage obligatoire du plan
+- Mélanger dans le plan des préconditions (consultation/MAJ des spécifications, validation d'intention)
+- Fournir des indications trop vagues qui ne permettent pas de comprendre les ajustements à effectuer sur le plan technique
+- Omettre les critères de validation et de réussite
+- Omettre la traçabilité des actions, des décisions et des résultats
+- Ne pas produire de résumé
