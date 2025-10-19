@@ -1,0 +1,88 @@
+---
+description: "Standards de formatage Markdown à appliquer aux règles (règles de gouvernance et spécifications)"
+alwaysApply: true
+---
+
+# markdown-formatting-standards.mdc : Standards de formatage Markdown à appliquer aux règles (règles de gouvernance et spécifications)
+
+> Créé le : 2025-08-14
+> Dernière mise à jour : 2025-10-14
+
+## Objectifs de la règle
+
+- Uniformisation des contenus pour les règles, les spécifications et la documentation utilisateur avec un format compréhensible par l'IA
+
+## Problèmes résolus/à résoudre
+
+- Erreurs markdownlint (MD022, MD032, MD041, etc.) causées par formatage markdown non conforme aux standards
+
+## Comportement général attendu
+
+- [Assistant IA/Agent] L'IA applique à la génération un formatage markdown conforme aux standards markdownlint
+- [Assistant IA/Agent] L'IA vérifie que les contenus manipulés sont conformes aux standards markdownlint et corrige si nécessaire
+
+## Contexte d'application et généralités
+
+- Règles de gouvernance
+- Spécifications
+- Documentation utilisateur
+- Complète @yaml-header-integrity.mdc pour qualité globale
+- Assure cohérence avec @specifications-template.mdc
+
+## Règles à appliquer
+
+### Formatage à respecter
+
+#### Règles obligatoires à appliquer
+
+- **Espaces autour titres** : Ligne vide avant ET après chaque titre (MD022)
+- **Espaces autour listes** : Ligne vide avant ET après chaque liste (MD032)
+- **Indentation cohérente** : 2 espaces pour listes imbriquées (MD007)
+- **Longueur lignes** : Maximum 80 caractères par ligne (MD013)
+- **Espace en fin de ligne** : Pas d'espace en fin de ligne (MD009)
+- **Listes cohérentes** : Espace après tirets/astérisques (MD006)
+- **Liens valides** : URLs valides et accessibles (MD011)
+- **Exception pour sauts de ligne dans tableaux** : Autorisation d'utiliser `<br>` dans les cellules de tableau pour assurer les sauts de ligne (transgression MD033 acceptée pour lisibilité)
+- **Vérification, correction et validation** :  Valider le formatage markdown et faire les corrections nécessaires avant d'enregistrer les changements dans un fichier
+
+#### Comportements interdits/proscrits/à éviter
+
+- **Titres sans espace** : Titres collés au contenu précédent/suivant
+- **Listes sans espace** : Listes collées au contenu précédent/suivant
+- **Listes mal formatées** : Espace manquant après marqueurs liste
+- **Lignes trop longues** : Dépassement 80 caractères
+- **Indentation incohérente** : Mélange espaces/tabulations
+- **En-tête YAML du fichier** Modifier le formattage de l'en-tête YAML du fichier qui doit impérativement rester au format YAML original
+
+#### Exemples
+
+##### ✅ Correct
+
+```markdown
+## Titre de Section
+
+Contenu avec espacement approprié.
+
+### Sous-section
+
+Texte avant liste avec ligne vide.
+
+- Liste correctement formatée
+  - Sous-élément indenté
+- Autre élément
+
+Texte après liste avec ligne vide.
+```
+
+##### ❌ Incorrect
+
+```markdown
+## Titre sans espace
+Contenu collé au titre
+### Sous-titre sans espace
+Texte collé à la liste
+- Liste mal formatée
+  - Sous-élément mal indenté
+- Autre élément
+Texte collé après liste
+```

@@ -5,8 +5,8 @@ alwaysApply: true
 
 # current-date-awareness.mdc : Gestion correcte de la date du jour par l'IA
 
-> Créé le : [2025-08-14]  
-> Dernière mise à jour : [2025-08-14]
+> Créé le : 2025-08-14
+> Dernière mise à jour : 2025-10-14
 
 ## Objectifs de la règle
 
@@ -34,3 +34,12 @@ alwaysApply: true
 - **Commande PowerShell** : `Get-Date -Format yyyy-MM-dd`
 - **Commande Node.js** : `new Date().toISOString().split('T')[0]`
 - **Commande Terminal** : `date +%Y-%m-%d`
+- **Remplacement avec date actuelle** : Retirer le placeholder [] et ajuster à la date actuelle Créé le : [YYYY-MM-DD] devient : Créé le : 2025-10-14 après ajustement avec la date actuelle
+
+#### Comportements interdits/proscrits/à éviter
+
+- Néant
+
+#### Validation
+
+- **Dernière mise à jour** : Vérifier que la date > Dernière mise à jour : 2025-10-14 soit actualisée à la date actuelle lors de l'enregistrement d'un fichier correspondant à une règle, une spécification ou une documentation utilisateur

@@ -1,0 +1,105 @@
+---
+description: "Gouvernance de la génération de contenu par l'IA optimisée pour la fonctionnalité Plan de Cursor"
+alwaysApply: true
+---
+
+# agent-ai-generation-governance.mdc: Gouvernance de la génération de contenu par l'IA optimisée pour Cursor
+
+> Créé le : 2025-08-18
+> Dernière mise à jour : 2025-10-15
+
+## Objectifs de la règle
+
+- Optimiser l'utilisation de la fonctionnalité Plan intégrée de Cursor
+- Garantir l'utilisation exclusive de références officielles dans tous les processus
+- Éviter les procédés manuels concurrents à la fonctionnalité Plan de Cursor
+- Maintenir la cohérence entre spécifications, plans et exécutions
+
+## Problèmes résolus/à résoudre
+
+- Procédés manuels de planification concurrençant la fonctionnalité Plan native de Cursor
+- Utilisation de références non officielles dans l'élaboration des spécifications et plans
+- Manque d'intégration avec les mécanismes de validation et traçabilité de Cursor
+- Incohérences entre spécifications et exécutions réelles
+
+## Comportement général attendu
+
+- L'IA utilise exclusivement la fonctionnalité Plan intégrée de Cursor pour les tâches complexes
+- L'IA consulte et valide les spécifications avant d'activer le mode Plan
+- L'utilisateur valide les plans via l'interface de Cursor avant exécution
+- La traçabilité est assurée automatiquement par les mécanismes intégrés de Cursor
+- Les références officielles sont utilisées à tous les niveaux du processus
+
+## Contexte d'application et généralités
+
+- S'applique à toute utilisation de la génération de contenu par l'IA via Cursor
+- Optimise l'utilisation de la fonctionnalité Plan intégrée de Cursor
+- Complète les règles @specification-governance et @cursor-rules-governance
+- Élimine les procédés manuels concurrents à la fonctionnalité Plan de Cursor
+- Garantit l'utilisation exclusive de références officielles vérifiées
+
+## Règles à appliquer
+
+### Utilisation de la fonctionnalité Plan de Cursor
+
+#### Règles obligatoires à appliquer
+
+- **ACTIVER MODE PLAN** : Utiliser systématiquement la fonctionnalité Plan intégrée de Cursor pour toute génération complexe nécessitant validation
+- **INTÉGRER SPÉCIFICATIONS** : S'assurer que les spécifications du projet sont consultées et mises à jour avant d'activer le mode Plan
+- **VALIDER CONTEXTE** : Vérifier l'alignement entre l'intention utilisateur et les spécifications avant de générer un plan
+- **FIABILITE REFERENCES** : Il est formellement interdit de baser ses recherches et ses réflexions sur la base de supposition ou de référence peu fiable. Les références officielles doivent être utilisées pour :
+  - **Élaborer les spécifications** : Sources documentaires officielles uniquement
+  - **Créer les plans d'exécution** : Documentation officielle et spécifications validées
+  - **Implémenter les solutions** : Respect strict des plans validés et documentation technique officielle
+
+#### Comportements interdits/proscrits/à éviter
+
+- **PROCÉDÉ MANUEL CONCURRENT** : Ne pas utiliser de procédé manuel de planification qui concurrence la fonctionnalité Plan native de Cursor
+- **GÉNÉRATION DIRECTE** : Ne jamais générer sans vérifier les spécifications correspondantes
+- **VALIDATION ASSUMÉE** : Ne pas supposer l'accord utilisateur sans demande explicite
+- **RÉFÉRENCES NON FIABLES** : Ne pas utiliser de sources non officielles pour l'élaboration des spécifications ou des plans
+
+#### Validation
+
+- Spécifications consultées et alignées avec l'intention utilisateur avant activation du mode Plan
+- Fonctionnalité Plan de Cursor utilisée pour les modifications complexes nécessitant validation
+- Accord utilisateur explicite obtenu via la fonctionnalité Plan de Cursor
+- Traçabilité automatique assurée par les mécanismes intégrés de Cursor
+
+#### Exemples d'utilisation de la fonctionnalité Plan de Cursor
+
+##### ✅ Correct — Utilisation du mode Plan de Cursor
+
+Prérequis avant activation du Plan:
+
+- Spécifications pertinentes consultées et mises à jour si nécessaire
+- Intention utilisateur clarifiée et validée
+- Contexte technique vérifié (références officielles uniquement)
+
+Processus avec fonctionnalité Plan de Cursor :
+
+1. **Activation du mode Plan** : Utiliser la fonctionnalité intégrée de Cursor
+2. **Intégration des spécifications** : Le plan généré doit respecter les spécifications validées
+3. **Validation utilisateur** : Accord explicite obtenu via l'interface de Cursor
+4. **Exécution contrôlée** : Réalisation selon le plan approuvé
+5. **Traçabilité automatique** : Historique conservé par Cursor
+
+##### ✅ Correct — Respect des références officielles
+
+Avant génération du plan :
+
+- Consulter uniquement la documentation officielle
+- Éviter toute interprétation personnelle, notamment des structures d'API
+- Baser les spécifications sur des sources vérifiées
+
+Pendant génération du plan :
+
+- Utiliser les spécifications validées comme base
+- Respecter les contraintes techniques documentées officiellement
+- Éviter les suppositions sur les fonctionnalités non documentées
+
+##### ❌ Incorrect — Violations des règles
+
+- **Procédé manuel concurrent** : Créer des fichiers de plan personnalisés au lieu d'utiliser la fonctionnalité Plan de Cursor
+- **Références non fiables** : Utiliser des suppositions ou de la documentation non officielle
+- **Validation implicite** : Procéder sans accord utilisateur explicite via l'interface de Cursor

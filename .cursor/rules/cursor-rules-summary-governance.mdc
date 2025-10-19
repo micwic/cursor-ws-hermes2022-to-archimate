@@ -26,7 +26,7 @@ alwaysApply: true
 - L'utilisateur de l'IA générative demande un résumé de session sur une situation donnée, un sujet, une constation lorsqu'il le juge nécessaire, il précise à quel niveau le résumé doit être généré [Règles de gouvernance|projet|module]
 - L'utilisateur de l'IA générative demande la suspension de la génération de résumé de session lors de phases exploratoires afin d'éviter de générer des informations parasites sans véritable valeur
 
-# Contexte d'application et généralités
+## Contexte d'application et généralités
 
 - Les règles de gouvernance sont régies par @cursor-rules-governance
 - Les spécifications sont régies par @specification-governance
@@ -61,7 +61,7 @@ alwaysApply: true
 
 ##### ✅ Correct
 
-**Localisation et dénomination**
+Localisation et dénomination:
 
 - Création ou adaptation d'une règle de gouvernance générale : projects-common/.cursor/rules/summary/2025-06-22-regles-cursor-mise-a-jour-powershell-windows11.md
 - Adaptation de spécifications générales pour un module ou un composant d'un projet : cii-via-cip-archimate-ia-repository/archimate-ia-loader/rules/summary/2025-05-20-specification-loader-test-tdd-alignment.md
@@ -70,7 +70,7 @@ alwaysApply: true
 
 ### Cohérence avec les spécifications
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires à appliquer pour la cohérence avec les spécifications
 
 - **Résumés complètent** les spécifications, ne les remplacent pas
 - **Erreurs résumées** → ajout anti-patterns spécifications correspondantes
@@ -78,7 +78,7 @@ alwaysApply: true
 
 ### Cohérence avec les règles de gouvernance
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires à appliquer pour la cohérence avec les règles de gouvernance
 
 - **Découvertes techniques** → création/mise à jour règles de gouvernance appropriées pour la technologie concernée
 - **Optimisations environnement** → intégration configuration standard

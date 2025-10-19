@@ -5,7 +5,7 @@ module.exports = {
       '**/__tests__/e2e/**/*.steps.{js,ts}'
     ],
     transform: {
-      '^.+\\.ts$': 'ts-jest',
+      '^.+\\.ts$': ['ts-jest', { tsconfig: { esModuleInterop: true } }],
       '^.+\\.js$': 'babel-jest'
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
@@ -18,11 +18,4 @@ module.exports = {
       '/__tests__/support/'
     ],
     // Spécifique Jest-Cucumber
-    globals: {
-      'ts-jest': {
-        tsconfig: {
-          esModuleInterop: true
-        }
-      }
-    }
   };

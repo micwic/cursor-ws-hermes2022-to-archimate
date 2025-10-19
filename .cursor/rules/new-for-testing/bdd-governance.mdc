@@ -6,11 +6,12 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : [2025-08-14]
+> Dernière mise à jour : [2025-08-19]
 
 ## Objectifs de la règle
 
 - Définir la gouvernance des spécifications détaillées selon les principes Behavior Driven Development
+- Appliquer le cycle Rouge → Vert → Refactor (TDD/BDD)
 - Assurer la cohérence entre les spécifications générales et les spécifications détaillées
 - Éviter la redondance et l'incohérence dans l'élaboration des spécifications
 
@@ -54,8 +55,35 @@ alwaysApply: true
 - Valider l'application des principes BDD
 - Contrôler l'absence de redondance
 
+### Cycle Rouge → Vert → Refactor (TDD/BDD)
+
+#### Principe
+
+- **Rouge**: écrire/scénariser un comportement en Gherkin (`.feature`) qui échoue; ajouter le minimum de steps pour reproduire l’échec.
+- **Vert**: implémenter le minimum dans les steps pour faire passer le scénario; viser le plus simple qui fonctionne.
+- **Refactor**: factoriser les steps, mutualiser dans `__tests__/shared/`, améliorer la lisibilité sans changer le comportement.
+
+#### Critères de validation
+
+- **Exécution**: les scénarios `.feature` ciblés passent via Jest-Cucumber (config partagée).
+- **Structure**: features en `__tests__/integration/` ou `__tests__/e2e/`, steps associées, steps partagées en `__tests__/shared/`.
+- **Langue**: `# language: fr` en tête des fichiers `.feature`.
+- **Traçabilité**: messages de commit alignés: `RED`, `GREEN`, `REFACTOR`.
+
+#### Anti-patterns (à éviter)
+
+- Implémenter avant d’écrire le scénario qui échoue (inversion Rouge→Vert).
+- Mélanger tests unitaires et BDD dans les mêmes répertoires.
+- Gros refactoring sans scénarios au vert.
+- Steps trop couplées au parsing au lieu du comportement.
+- Duplication de steps réutilisables non mutualisées.
+
+#### Références
+
+- Voir `@bdd-cucumber-vscode-plugin-governance.mdc` (structure des tests et plugin VSCode).
+- Voir la configuration Jest-Cucumber partagée (`cucumber-jest.config.js`).
+
 ### Évolution à prévoir
 
 - Extension des principes BDD selon l'évolution du projet
 - Adaptation des spécifications détaillées aux nouveaux besoins
-# bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
