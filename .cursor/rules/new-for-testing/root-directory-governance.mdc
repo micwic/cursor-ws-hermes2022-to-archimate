@@ -1,0 +1,197 @@
+---
+description: Principes appliqués pour déterminer le répertoire racine du projet dans l'écosystème Node.js/JavaScript
+alwaysApply: true
+---
+
+# root-directory-governance.mdc: Principes appliqués pour déterminer le répertoire racine du projet dans l'écosystème Node.js/JavaScript
+
+> Créé le : 2025-10-20
+> Dernière mise à jour : 2025-10-20
+
+## Objectifs de la règle
+
+- Appliquer un comportement standard reconnu et homogène dans tout le projet pour déterminer le répertoire racine de celui-ci
+- Rendre les structures de code aussi flexibles que possible en permettant leur déplacement dans la structure hiérarchique de répertoire sans créer d'erreur
+- Garantir que tous les chemins dans les fichiers de configuration sont relatifs à la racine du projet
+
+## Problèmes résolus/à résoudre
+
+- Éviter d'appliquer des comportements différents pour déterminer un chemin de répertoire
+- Éviter d'appliquer des manières de faire différentes en matière de configuration de chemin dans les fichiers de configuration
+- Éliminer les chemins relatifs fragiles du type `../../../` qui cassent lors de refactoring
+
+## Comportement général attendu
+
+- L'IA et l'utilisateur utilisent toujours le comportement standard tel que défini dans les règles à appliquer ci-dessous pour déterminer la racine du projet
+- Tous les chemins dans les fichiers de configuration JSON/YAML sont relatifs à la racine du projet (repoRoot)
+- Un seul package.json existe à la racine du repository selon les conventions du projet
+
+## Contexte d'application et généralités
+
+- La règle est établie en conformité avec les bonnes pratiques standards et reconnues dans l'écosystème Node.js/JavaScript
+- Convention Node.js universelle : le fichier `package.json` marque la racine d'un projet
+- Le package `find-up` est la solution standard de facto utilisée par l'écosystème (ESLint, Prettier, TypeScript, etc.)
+
+## Règles à appliquer
+
+### Utiliser le package find-up pour déterminer la racine du projet
+
+#### Règles obligatoires à appliquer
+
+- **INSTALLER** : `npm install --save-dev find-up`
+- **MARQUEUR** : Utiliser `package.json` comme marqueur de répertoire racine (convention Node.js standard)
+- **MÉTHODE ASYNCHRONE** : Utiliser `await findUp('package.json', { cwd: __dirname })` dans les contextes async
+- **MÉTHODE SYNCHRONE** : Utiliser `findUpSync('package.json', { cwd: __dirname })` dans les contextes synchrones
+- **GESTION ERREUR** : Toujours vérifier que `package.json` a été trouvé et lever une erreur explicite sinon
+- **CACHE** : Mettre en cache la racine détectée pour éviter les recherches répétées
+
+#### Comportements interdits/proscrits/à éviter
+
+- **CHEMINS RELATIFS FRAGILES** : Éviter `path.resolve(__dirname, '../../..')` → **Solution** : Utiliser `find-up` → **Règle à adopter** : Détection automatique de la racine
+- **HARDCODING** : Éviter de coder en dur des chemins absolus → **Solution** : Chemins relatifs depuis repoRoot → **Règle à adopter** : Configuration flexible
+- **MULTIPLES MÉTHODES** : Éviter d'utiliser des approches différentes selon les fichiers → **Solution** : Méthode unique centralisée → **Règle à adopter** : Cohérence du projet
+- **PROCESS.CWD()** : Éviter `process.cwd()` qui dépend d'où la commande est lancée → **Solution** : `find-up` qui remonte depuis le code → **Règle à adopter** : Stabilité indépendante du contexte d'exécution
+
+#### Validation
+
+- Vérifier que `find-up` est présent dans `devDependencies` du `package.json`
+- Vérifier qu'aucun chemin du type `../../../` n'existe dans le code
+- Vérifier que tous les chemins dans les fichiers de configuration sont relatifs (ne commencent pas par `/`)
+- Tester l'exécution du script depuis différents répertoires pour valider la robustesse
+
+#### Exemples
+
+##### ✅ Correct — Version asynchrone (recommandée)
+
+```javascript
+const findUp = require('find-up');
+const path = require('path');
+
+// Cache de la racine détectée
+let _cachedRepoRoot = null;
+
+/**
+ * Obtient la racine du repository
+ * @returns {Promise<string>} Chemin absolu vers la racine du repo
+ */
+async function getRepoRoot() {
+  if (!_cachedRepoRoot) {
+    const packagePath = await findUp('package.json', { cwd: __dirname });
+    if (!packagePath) {
+      throw new Error('Could not find project root (package.json not found)');
+    }
+    _cachedRepoRoot = path.dirname(packagePath);
+  }
+  return _cachedRepoRoot;
+}
+
+/**
+ * Résout un chemin depuis la racine du repository
+ * @param {...string} segments - Segments de chemin relatifs à repoRoot
+ * @returns {Promise<string>} Chemin absolu résolu
+ */
+async function resolveFromRepoRoot(...segments) {
+  const repoRoot = await getRepoRoot();
+  return path.resolve(repoRoot, ...segments);
+}
+
+// Utilisation
+async function loadConfig() {
+  const configPath = await resolveFromRepoRoot('hermes2022-concepts-site-extraction/config/extraction-config.json');
+  // ...
+}
+```
+
+##### ✅ Correct — Version synchrone (contextes non-async)
+
+```javascript
+const { findUpSync } = require('find-up');
+const path = require('path');
+
+let _cachedRepoRoot = null;
+
+/**
+ * Obtient la racine du repository (version synchrone)
+ * @returns {string} Chemin absolu vers la racine du repo
+ */
+function getRepoRootSync() {
+  if (!_cachedRepoRoot) {
+    const packagePath = findUpSync('package.json', { cwd: __dirname });
+    if (!packagePath) {
+      throw new Error('Could not find project root (package.json not found)');
+    }
+    _cachedRepoRoot = path.dirname(packagePath);
+  }
+  return _cachedRepoRoot;
+}
+
+/**
+ * Résout un chemin depuis la racine du repository (version synchrone)
+ * @param {...string} segments - Segments de chemin relatifs à repoRoot
+ * @returns {string} Chemin absolu résolu
+ */
+function resolveFromRepoRootSync(...segments) {
+  const repoRoot = getRepoRootSync();
+  return path.resolve(repoRoot, ...segments);
+}
+```
+
+##### ❌ Incorrect — Chemins relatifs fragiles
+
+```javascript
+// ❌ MAUVAIS : Casse si le fichier est déplacé
+const configPath = path.resolve(__dirname, '../../../config/extraction-config.json');
+
+// ❌ MAUVAIS : Dépend d'où la commande est lancée
+const configPath = path.resolve(process.cwd(), 'config/extraction-config.json');
+
+// ❌ MAUVAIS : Chemin absolu codé en dur
+const configPath = '/home/user/project/config/extraction-config.json';
+```
+
+### Configuration des chemins dans les fichiers de configuration
+
+#### Règles obligatoires pour les chemins dans les fichiers de configuration
+
+- **CHEMINS RELATIFS** : Tous les chemins dans les fichiers de configuration (JSON, YAML, etc.) doivent être relatifs à la racine du projet
+- **PAS DE SLASH INITIAL** : Les chemins ne doivent pas commencer par `/` (réservé aux chemins absolus)
+- **FORMAT STANDARD** : Utiliser le format `module/sous-repertoire/fichier.ext` depuis repoRoot
+- **DOCUMENTATION** : Documenter dans les fichiers de configuration que les chemins sont relatifs à repoRoot
+
+#### Exemples de configuration
+
+##### ✅ Correct — Chemins relatifs dans extraction-config.json
+
+```json
+{
+  "nuextract": {
+    "apiKeyFile": "hermes2022-concepts-site-extraction/config/nuextract-api-key.key",
+    "templateTransformationInstructionFile": "hermes2022-concepts-site-extraction/config/instructions-template-nuextract.md",
+    "mainJSONConfigurationFile": "shared/hermes2022-extraction-files/config/json-schemas/hermes2022-concepts.json"
+  },
+  "artifactBaseDir": "shared/hermes2022-extraction-files/data"
+}
+```
+
+##### ❌ Incorrect — Chemins mal formatés
+
+```json
+{
+  "nuextract": {
+    "apiKeyFile": "/config/nuextract-api-key.key",
+    "templateTransformationInstructionFile": "../config/instructions-template-nuextract.md",
+    "mainJSONConfigurationFile": "/home/user/project/shared/hermes2022-extraction-files/config/json-schemas/hermes2022-concepts.json"
+  }
+}
+```
+
+## État d'implémentation
+
+🚧 [En cours de déploiement dans le projet]
+
+- ✅ Convention définie : `package.json` comme marqueur
+- ✅ Package `find-up` sélectionné comme solution standard
+- 🚧 À implémenter : Module `path-resolver.js` dans hermes2022-concepts-site-extraction
+- 🚧 À migrer : `nuextract-client.js` pour utiliser `find-up`
+- 🚧 À migrer : Tests BDD pour utiliser `find-up`
+- ❌ À mettre à jour : Fichiers de configuration avec chemins relatifs depuis repoRoot

@@ -112,4 +112,3 @@ Les projets sont gérés dans un workspace qui peut être propre au projet lui-m
 - Vérifier que le formatage du contenu est conforme et valable selon @markdown-formatting-standards, signaler les non conformités qui ne peuvent pas être ajustées, corriger les non conformités de formes qui peuvent être ajustées sans perte de valeur
 - Vérifier que la date de dernière mise à jour (> Dernière mise à jour : [YYYY-MM-DD]) est modifiée à la date du jour conformément à @date-awareness
 - Vérifier que les liens vers des règles ou des fichiers pointent effectivement sur des règles et fichiers existants et accessibles
-
