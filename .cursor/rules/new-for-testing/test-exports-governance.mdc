@@ -1,0 +1,99 @@
+---
+description: Gouvernance des exports Javascript réservés aux tests
+alwaysApply: true
+---
+
+# test-exports-governance.mdc : Gouvernance des exports Javascript réservés aux tests
+
+> Créé le : 2025-10-25
+> Dernière mise à jour : 2025-10-25
+
+## Objectifs de la règle
+
+- Distinguer clairement les exports de production des exports réservés aux tests
+- Éviter l'utilisation accidentelle de fonctions internes en production
+- Faciliter le mocking dans les tests BDD comportementaux
+
+## Problèmes résolus/à résoudre
+
+- Confusion entre API publique et API de test
+- Risque d'utilisation de fonctions internes en production
+- Difficulté à identifier les exports mockables dans les tests
+
+## Comportement général attendu
+
+- L'IA et l'utilisateur préfixent systématiquement avec `_testOnly_` les exports réservés aux tests
+- Les tests importent et utilisent uniquement les exports préfixés `_testOnly_`
+- Aucun code de production n'utilise les exports `_testOnly_`
+
+## Contexte d'application et généralités
+
+- S'applique à tous les modules JavaScript/TypeScript exportant des fonctions pour les tests
+- Convention reconnue dans l'écosystème JavaScript pour indiquer usage interne
+- Compatible avec les frameworks de test (Jest, Mocha, etc.)
+
+## Règles à appliquer
+
+### Convention de nommage des exports de test
+
+#### Règles obligatoires à appliquer
+
+- **PRÉFIXE _testOnly_** : Tous les exports réservés aux tests doivent être préfixés avec `_testOnly_`
+- **COMMENTAIRE** : Ajouter un commentaire `// Exports pour tests uniquement` au-dessus de la section des exports de test
+- **SÉPARATION** : Séparer visuellement les exports de production (s'ils existent) des exports de test dans module.exports
+- **DOCUMENTATION** : Documenter dans les spécifications que ces exports sont réservés aux tests uniquement selon @test-exports-governance
+
+#### Comportements interdits/proscrits/à éviter
+
+- **Utilisation en production** : Ne jamais utiliser les exports `_testOnly_` dans du code de production
+- **Exports mixtes** : Éviter de mélanger exports publics et exports de test sans distinction claire
+- **Nommage inconsistant** : Ne pas utiliser d'autres préfixes comme `__test`, `_internal`, etc.
+
+#### Validation
+
+- Vérifier que tous les exports utilisés dans les tests sont préfixés `_testOnly_`
+- Vérifier qu'aucun code de production n'importe les exports `_testOnly_`
+- Vérifier la présence du commentaire explicatif
+
+#### Exemples
+
+##### ✅ Correct
+
+```javascript
+// nuextract-client.js
+// Exports pour tests uniquement
+module.exports = {
+  _testOnly_loadGlobalConfig: loadGlobalConfig,
+  _testOnly_loadApiKey: loadApiKey,
+  _testOnly_generateTemplate: generateTemplate,
+  _testOnly_inferTemplateFromDescriptionAsync: inferTemplateFromDescriptionAsync
+};
+```
+
+```typescript
+// test.steps.ts
+const { _testOnly_loadApiKey } = require('src/nuextract-client.js');
+jest.spyOn(nuextractClient, '_testOnly_loadApiKey').mockResolvedValue('fake-key');
+```
+
+##### ❌ Incorrect
+
+```javascript
+// ❌ Sans préfixe
+module.exports = {
+  loadGlobalConfig,
+  loadApiKey
+};
+
+// ❌ Préfixe inconsistant
+module.exports = {
+  __test_loadApiKey,
+  _internal_generateTemplate
+};
+```
+
+## État d'implémentation
+
+✅ [Règle définie - 2025-10-25]
+🚧 [Application en cours sur nuextract-client.js et tests]
+# test-exports-governance.mdc : Gouvernance des exports réservés aux tests

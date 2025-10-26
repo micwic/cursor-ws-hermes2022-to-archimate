@@ -1,0 +1,214 @@
+---
+description: Gouvernance de la gestion des erreurs Javascript (try-catch, throw, Error)
+alwaysApply: true
+---
+
+# error-handling-governance.mdc : Gouvernance de la gestion des erreurs Javascript
+
+> Créé le : 2025-10-25
+> Dernière mise à jour : 2025-10-25
+
+## Objectifs de la règle
+
+- Harmoniser la gestion des erreurs Javascript
+- Préserver la traçabilité des erreurs (stack trace)
+- Fournir des messages d'erreur clairs et contextualisés
+- Faciliter le débogage et les tests
+
+## Problèmes résolus/à résoudre
+
+- Incohérence entre propagation simple (`throw error`) et création de nouvelles erreurs (`throw new Error(...)`)
+- Perte de stack trace lors de la création de nouvelles erreurs
+- Messages d'erreur parfois trop génériques ou sans contexte
+
+## Comportement général attendu
+
+- L'IA et l'utilisateur appliquent systématiquement les patterns définis ci-dessous
+- Les erreurs préservent le contexte d'origine tout en ajoutant des informations locales
+- Les messages d'erreur sont clairs et permettent d'identifier rapidement la source du problème
+
+## Contexte d'application et généralités
+
+- S'applique à tout le code JavaScript/TypeScript
+- Utilise les standards JavaScript modernes (ES2022 Error Cause)
+- Compatible avec Node.js 16+ et les frameworks de test (Jest, Jest-Cucumber)
+
+## Règles à appliquer
+
+### Pattern 1 : Erreurs de validation / Erreurs métier
+
+#### Description
+
+Utiliser pour les erreurs de validation de paramètres, de configuration, ou de logique métier détectées localement.
+
+#### Pattern validé
+
+```javascript
+// Validation simple
+if (!param) {
+  throw new Error('Parameter is required. Script stopped.');
+}
+
+// Validation avec contexte
+if (templateMode !== 'sync' && templateMode !== 'async') {
+  throw new Error(`templateMode invalide: "${templateMode}". Valeurs acceptées: "sync", "async". Script stopped.`);
+}
+```
+
+#### Règles
+
+- **Message explicite** : Indiquer clairement ce qui est invalide et pourquoi
+- **Valeurs attendues** : Mentionner les valeurs acceptées si applicable
+- **Terminaison "Script stopped"** : Ajouter systématiquement pour indiquer un arrêt propre
+
+#### Anti-Patterns
+
+- ❌ Message générique : `throw new Error('Invalid input')`
+- ❌ Sans valeurs attendues : `throw new Error('Mode invalide')`
+
+### Pattern 2 : Wrapping d'erreur externe avec contexte (Error Cause ES2022)
+
+#### Description
+
+Utiliser pour les erreurs provenant de bibliothèques externes (fs, https, jwt) où on veut ajouter du contexte tout en préservant l'erreur originale.
+
+#### Pattern validé
+
+```javascript
+// Avec Error Cause (ES2022)
+try {
+  const decoded = jwt.decode(apiKey, { complete: true });
+  // ...
+} catch (error) {
+  throw new Error('API key format is invalid. Script stopped.', { cause: error });
+}
+
+// Pour Node.js < 16.9 (fallback sans cause)
+try {
+  fs.readFileSync(path, 'utf8');
+} catch (error) {
+  throw new Error(`Configuration file not found: ${error.message}. Script stopped.`);
+}
+```
+
+#### Règles
+
+- **Préférer Error Cause** : Utiliser `{ cause: error }` pour préserver la stack trace originale
+- **Message contextualisé** : Ajouter le contexte local (ex: "Configuration file", "API key")
+- **Logging avant throw** : Logger avec `console.error()` avant de throw
+- **Terminaison "Script stopped"** : Ajouter systématiquement
+
+#### Anti-Patterns
+
+- ❌ Perte de cause : `throw new Error('Error occurred')`
+- ❌ Message trop vague : `throw new Error('File error')`
+
+### Pattern 3 : Propagation d'erreur dans fonctions d'orchestration
+
+#### Description
+
+Utiliser dans les fonctions d'orchestration (qui appellent d'autres fonctions) où l'erreur est déjà contextualisée.
+
+#### Pattern validé
+
+```javascript
+async function generateTemplate(config, apiKey) {
+  try {
+    const instructions = loadInstructions(); // Fonction qui peut throw
+    const schema = loadAndResolveSchemas(); // Fonction qui peut throw
+    // ... logique métier ...
+    return template;
+  } catch (error) {
+    console.error(`Erreur lors de la génération du template: ${error.message}`);
+    throw error; // Propagation simple avec logging
+  }
+}
+```
+
+#### Règles
+
+- **Logging obligatoire** : Toujours logger avec `console.error()` avant propagation
+- **Propagation simple** : `throw error` sans modification
+- **Contexte dans le log** : Le message de log ajoute le contexte de la fonction
+
+#### Anti-Patterns
+
+- ❌ Propagation sans logging : `catch (error) { throw error; }`
+- ❌ Recréation d'erreur : `throw new Error(error.message)` → perd la stack
+
+### Pattern 4 : Erreurs HTTP/API avec Promise
+
+#### Description
+
+Utiliser dans les fonctions retournant des Promises pour les appels HTTP/API.
+
+#### Pattern validé
+
+```javascript
+async function getNuExtractProjects(apiKey) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`API error: ${res.statusCode} - ${data}`));
+          return;
+        }
+        try {
+          resolve(JSON.parse(data));
+        } catch (err) {
+          reject(new Error('Invalid JSON response', { cause: err }));
+        }
+      });
+    });
+    
+    req.setTimeout(10000, () => {
+      req.destroy();
+      reject(new Error('Timeout: Request exceeded 10 seconds'));
+    });
+    
+    req.on('error', (err) => {
+      reject(new Error('Network error', { cause: err }));
+    });
+    
+    req.end();
+  });
+}
+```
+
+#### Règles
+
+- **reject avec new Error** : Toujours créer une Error explicite
+- **Contexte HTTP** : Inclure status code, timeout, ou type d'erreur réseau
+- **Error Cause** : Pour erreurs de parsing ou réseau
+- **Messages clairs** : "API error", "Invalid JSON response", "Timeout", "Network error"
+
+#### Anti-Patterns
+
+- ❌ Reject direct : `reject(err)` sans contexte
+- ❌ Message vague : `reject(new Error('Request failed'))`
+
+### Tableau récapitulatif des patterns
+
+| Contexte | Pattern | Exemple | Stack trace préservée |
+|:---------|:--------|:--------|:---------------------|
+| Validation locale | Nouvelle erreur | `throw new Error('Invalid param')` | N/A (nouvelle erreur) |
+| Wrapping externe | Error Cause | `throw new Error('Context', { cause: err })` | ✅ Oui |
+| Orchestration | Propagation + log | `console.error(...); throw error;` | ✅ Oui |
+| HTTP/API Promise | reject Error | `reject(new Error('API error', { cause: err }))` | ✅ Oui (avec cause) |
+
+## Validation
+
+- Vérifier que tous les `throw` et `reject` utilisent le pattern approprié
+- Vérifier la présence de logging avant propagation
+- Vérifier l'utilisation d'Error Cause quand applicable
+- Tester que les messages d'erreur sont clairs et contextualisés
+
+## État d'implémentation
+
+🚧 [En cours de déploiement - 2025-10-25]
+
+- ✅ Règle définie et documentée
+- 🚧 À implémenter : Mise à niveau du code existant
+- 🚧 À implémenter : Tests de validation des messages d'erreur

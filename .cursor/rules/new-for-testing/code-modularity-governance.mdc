@@ -1,0 +1,159 @@
+---
+description: Gouvernance générale de la modularité du code selon principes SOLID
+alwaysApply: true
+---
+
+# code-modularity-governance.mdc : Gouvernance de la modularité du code
+
+> Créé le : 2025-10-26
+> Dernière mise à jour : 2025-10-26
+
+## Objectifs de la règle
+
+- Appliquer les principes SOLID pour une architecture maintenable
+- Séparer les responsabilités (Separation of Concerns) dans des modules distincts
+- Assurer haute cohésion et faible couplage (High Cohesion, Low Coupling)
+- Utiliser Dependency Injection pour éliminer les variables globales
+- Améliorer la testabilité, maintenabilité et réutilisabilité du code
+
+## Problèmes résolus/à résoudre
+
+- Code monolithique violant le Single Responsibility Principle (SRP)
+- Couplage fort via variables globales
+- Fonctions impures dépendant de l'état global
+- Difficulté à tester unitairement les comportements isolés
+- Modules non réutilisables dans d'autres contextes
+
+## Comportement général attendu
+
+- L'IA et l'utilisateur appliquent systématiquement les principes SOLID
+- Chaque module a une responsabilité unique et bien définie
+- Les fonctions reçoivent leurs dépendances en paramètres (Dependency Injection)
+- Les modules communiquent via des interfaces claires (imports/exports)
+- Les tests peuvent mocker les dépendances facilement
+
+## Principes de référence
+
+### SOLID Principles
+
+- **S - Single Responsibility Principle** : Un module = une seule raison de changer
+- **O - Open/Closed Principle** : Ouvert à l'extension, fermé à la modification
+- **L - Liskov Substitution Principle** : Les modules dépendants doivent être substituables
+- **I - Interface Segregation Principle** : Interfaces spécifiques plutôt qu'interfaces générales
+- **D - Dependency Inversion Principle** : Dépendre d'abstractions, pas d'implémentations
+
+### Dependency Injection
+
+- **Paramètres explicites** : Toutes les dépendances passées en paramètres
+- **Fonctions pures** : Même entrée = même sortie, pas d'état global
+- **Testabilité** : Facile de passer des mocks en paramètres
+
+### Separation of Concerns
+
+- **Couche API/I/O** : Interactions réseau, fichiers, bases de données
+- **Couche logique métier** : Transformations, validations, orchestration
+- **Couche utilitaire** : Helpers génériques réutilisables
+
+### High Cohesion, Low Coupling
+
+- **Haute cohésion** : Fonctions d'un module fortement liées à sa responsabilité
+- **Faible couplage** : Dépendances minimales entre modules
+
+## Règles à appliquer
+
+### Modularité du code
+
+#### Règles obligatoires à appliquer
+
+- **MODULE PAR RESPONSABILITÉ** : Créer un module séparé pour chaque responsabilité distincte
+- **SINGLE RESPONSIBILITY** : Un module ne doit avoir qu'une seule raison de changer
+- **DEPENDENCY INJECTION** : Passer toutes les dépendances en paramètres (pas de variables globales)
+- **FONCTIONS PURES** : Fonctions sans état global (sauf console.log pour logs)
+- **IMPORTS EXPLICITES** : Les dépendances entre modules doivent être explicites (require/import)
+- **EXPORTS NORMAUX** : Les modules exposent leur interface publique avec exports normaux
+- **EXPORTS _testOnly_** : Réservés uniquement aux modules métier pour exposer fonctions internes selon @test-exports-governance
+
+#### Patterns validés
+
+**Séparation par couches** :
+
+```
+src/
+  ├── *-api.js          ← Couche API/I/O (fonctions pures, exports normaux)
+  ├── *-client.js       ← Couche logique métier (orchestration, exports _testOnly_)
+  └── *-utils.js        ← Couche utilitaire (helpers génériques)
+```
+
+**Module API avec fonctions pures** :
+
+```javascript
+// nuextract-api.js - Responsabilité : Appels HTTP vers NuExtract
+// Fonctions pures avec paramètres explicites (Dependency Injection)
+
+async function inferTemplateAsync(hostname, port, path, apiKey, description, timeout) {
+  return new Promise((resolve, reject) => {
+    const options = { hostname, port, path, method: 'POST', headers: {...} };
+    // ... appel HTTP
+  });
+}
+
+// EXPORTS NORMAUX (interface publique du module)
+module.exports = {
+  inferTemplateAsync,
+  getJobStatus,
+  pollJobUntilComplete,
+  // ... autres fonctions API
+};
+```
+
+**Module métier avec Dependency Injection** :
+
+```javascript
+// nuextract-client.js - Responsabilité : Logique métier extraction
+const nuextractApi = require('./nuextract-api.js');
+
+async function generateTemplate(config, apiKey) {
+  // Gestion des fallbacks de configuration
+  const hostname = config?.nuextract?.baseUrl || 'nuextract.ai';
+  const port = config?.nuextract?.port || 443;
+  const path = config?.nuextract?.['infer-templateAsyncPath'] || '/api/infer-template-async';
+  
+  // Appel API avec paramètres explicites
+  const response = await nuextractApi.inferTemplateAsync(
+    hostname, port, path, apiKey, description, 60
+  );
+  // ... logique métier
+}
+
+// EXPORTS _testOnly_ (pour tester la logique métier)
+module.exports = {
+  _testOnly_generateTemplate: generateTemplate,
+  // ... autres fonctions métier
+};
+```
+
+**Tests avec mocking facile** :
+
+```typescript
+// Test de la logique métier avec API mockée
+jest.mock('../../src/nuextract-api.js', () => ({
+  inferTemplateAsync: jest.fn(),
+  getJobStatus: jest.fn()
+}));
+
+test('generateTemplate gère les fallbacks', async () => {
+  nuextractApi.inferTemplateAsync.mockResolvedValue({...});
+  // Tester uniquement la logique métier et les fallbacks
+});
+```
+
+#### Anti-Patterns à éviter
+
+- **Variables globales** : Éviter GLOBAL_CONFIG → **Solution** : Paramètres explicites → **Règle** : Dependency Injection
+- **God Module** : Éviter modules avec multiples responsabilités → **Solution** : Séparer par responsabilité → **Règle** : SRP
+- **Appels internes directs** : Éviter d'appeler fonctions du même module → **Solution** : Extraire dans module dédié → **Règle** : Separation of Concerns
+- **Exports _testOnly_ dans API** : Éviter dans modules d'infrastructure → **Solution** : Exports normaux → **Règle** : Interface publique claire
+
+## État d'implémentation
+
+✅ [Règle définie et appliquée sur nuextract-client.js - 2025-10-26]
