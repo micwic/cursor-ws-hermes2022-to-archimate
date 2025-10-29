@@ -1,0 +1,184 @@
+---
+description: Gouvernance des mocks dans les tests BDD avec Jest
+alwaysApply: true
+---
+
+# test-mock-governance.mdc : Gouvernance des mocks dans les tests BDD
+
+> Créé le : 2025-10-29
+> Dernière mise à jour : 2025-10-29
+
+## Objectifs de la règle
+
+- Garantir l'isolation complète entre tests
+- Éviter les effets de bord entre tests
+- Appliquer les bonnes pratiques Jest/BDD reconnues
+- Assurer la testabilité et la maintenabilité du code de test
+
+## Problèmes résolus/à résoudre
+
+- Effets de bord entre tests causés par des mocks non restaurés
+- Pollution de l'environnement de test entre exécutions
+- Incohérence dans l'utilisation des mocks
+- Tests interdépendants difficiles à déboguer
+
+## Comportement général attendu
+
+- L'IA applique systématiquement les hooks beforeEach/afterEach
+- L'utilisateur valide que chaque test est indépendant
+- Les mocks sont restaurés automatiquement après chaque test
+- Mocker uniquement ce qui est nécessaire pour tester les erreurs
+
+## Contexte d'application et généralités
+
+- S'applique à tous les tests BDD avec Jest et jest-cucumber
+- Compatible avec TypeScript et JavaScript
+- Suit les recommandations officielles Jest et jest-cucumber
+- Complète @bdd-governance et @test-exports-governance
+
+## Règles à appliquer
+
+### Hooks beforeEach/afterEach obligatoires
+
+#### Règles obligatoires à appliquer
+
+- **ISOLATION GLOBALE** : Hooks au niveau du fichier de tests, pas dans chaque test
+- **SAUVEGARDE** : beforeEach sauvegarde les fonctions originales avant chaque test
+- **RESTAURATION** : afterEach restaure les fonctions originales après chaque test
+- **CLEANUP** : jest.clearAllMocks() dans beforeEach, jest.restoreAllMocks() dans afterEach
+
+#### Patterns validés
+
+**Hook global standard** :
+
+```typescript
+// Variables pour restauration des mocks
+let originalReadFileSync: typeof fs.readFileSync;
+
+// Hooks pour isolation des tests (bonne pratique Jest/BDD)
+beforeEach(() => {
+  // Sauvegarder les fonctions originales avant chaque test
+  originalReadFileSync = fs.readFileSync;
+  jest.clearAllMocks();
+});
+
+afterEach(() => {
+  // Restaurer les fonctions originales après chaque test
+  fs.readFileSync = originalReadFileSync;
+  jest.restoreAllMocks();
+});
+```
+
+#### Anti-Patterns à éviter
+
+- **Cleanup manuel** : Éviter restauration dans chaque test → **Solution** : Hooks globaux → **Règle à adopter** : beforeEach/afterEach au niveau fichier
+- **Variables locales** : Éviter `let originalReadFileSync` dans chaque test → **Solution** : Variable globale au fichier → **Règle à adopter** : Déclaration unique
+- **Pas de hooks** : Ne jamais omettre beforeEach/afterEach → **Solution** : Toujours inclure → **Règle à adopter** : Pattern obligatoire
+- **jest.clearAllMocks() dans tests** : Éviter dans steps individuels → **Solution** : Dans beforeEach → **Règle à adopter** : Centralisation cleanup
+
+#### État d'implémentation
+
+✅ [Appliqué dans error-handling.steps.ts - 2025-10-29]
+
+### Utilisation de la configuration réelle
+
+#### Règles obligatoires à appliquer
+
+- **TESTS NON-ERREUR** : Utiliser la config réelle si le test ne valide pas d'erreur de config
+- **MOCKS CIBLÉS** : Mocker uniquement les dépendances testées pour erreur
+- **VALIDATION RÉALISTE** : Tests avec config réelle valident les contraintes réelles (15 clés)
+- **PRINCIPE GÉNÉRAL** : Mocker uniquement ce qui est testé pour erreur
+
+#### Patterns validés
+
+**Tests d'erreur de configuration** :
+
+```typescript
+test('Erreur config manquant', ({ given, when, then }) => {
+  given('un fichier config inexistant', () => {
+    fs.readFileSync = jest.fn().mockImplementation(() => {
+      const err = new Error('ENOENT');
+      err.code = 'ENOENT';
+      throw err;
+    });
+  });
+});
+```
+
+**Tests non-erreur** :
+
+```typescript
+test('Chargement réussi', ({ given, when, then }) => {
+  given('un fichier de clé API valide', async () => {
+    config = await loadGlobalConfig(); // Config RÉELLE
+    // Pas de mock, fichier clé API RÉEL utilisé
+  });
+});
+```
+
+#### Anti-Patterns à éviter
+
+- **Over-mocking** : Éviter de mocker config pour tests non-erreur → **Solution** : Utiliser config réelle
+- **Mocking systématique** : Éviter de mocker toutes les dépendances → **Solution** : Mocking ciblé
+
+#### État d'implémentation
+
+✅ [Principe appliqué dans error-handling.steps.ts - 2025-10-29]
+
+### Mocking de modules avec jest.mock()
+
+#### Règles obligatoires à appliquer
+
+- **MOCK GLOBAL** : Utiliser jest.mock() au niveau du fichier pour modules externes
+- **SPREAD ACTUAL** : Préserver fonctions non mockées avec ...actual
+- **MOCK FUNCTIONS** : Wrapper fonctions à mocker avec jest.fn()
+- **ISOLATION** : Permettre le mocking individuel par test avec jest.spyOn()
+
+#### Patterns validés
+
+```typescript
+// Mock global du module
+jest.mock('../../src/nuextract-api.js', () => {
+  const actual = jest.requireActual('../../src/nuextract-api.js');
+  return {
+    ...actual,
+    inferTemplateAsync: jest.fn(actual.inferTemplateAsync)
+  };
+});
+
+// Dans un test spécifique
+test('Test avec mock', ({ given }) => {
+  given('une API mockée', () => {
+    jest.spyOn(nuextractApi, 'inferTemplateAsync')
+      .mockResolvedValue({ status: 'ok' });
+  });
+});
+```
+
+#### État d'implémentation
+
+✅ [Appliqué pour nuextract-api.js - 2025-10-29]
+
+## Validation
+
+- Vérifier présence de beforeEach/afterEach dans tous les fichiers de test
+- Vérifier que les mocks sont ciblés uniquement pour tests d'erreur
+- Vérifier l'absence de cleanup manuel dans les tests individuels
+- Tester l'exécution des tests dans un ordre aléatoire pour valider l'isolation
+
+## Références
+
+- Documentation Jest : https://jestjs.io/docs/setup-teardown
+- Documentation jest-cucumber : https://github.com/bencompton/jest-cucumber
+- @bdd-governance : Principes BDD et cycle Rouge-Vert-Refactor
+- @test-exports-governance : Convention exports _testOnly_
+- @code-modularity-governance : Principes SOLID et Dependency Injection
+
+## État d'implémentation
+
+✅ [Règle définie et appliquée - 2025-10-29]
+
+- ✅ Hooks beforeEach/afterEach implémentés dans error-handling.steps.ts
+- ✅ Cleanup manuel retiré des tests individuels
+- ✅ Principe "mocker uniquement pour erreurs" appliqué
+- ✅ Mock module nuextract-api.js avec jest.mock()

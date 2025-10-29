@@ -93,6 +93,14 @@ Les projets sont gérés dans un workspace qui peut être propre au projet lui-m
 - **UTILISER** : Les spécifications générales de domaines ou de composants d'un projet sont appliquées au domaine ou au composant concerné uniquement
 - **LOCALISATION et NOMMAGE** : `{project-root}/{module}/rules/specification-{module}.mdc` module = [domain|component|subject]
 
+### Spécifications de tests
+
+#### Règles obligatoires à appliquer
+
+- **UTILISER** : Les spécifications de tests sont appliquées au périmètre de tests du projet, domaine ou module concerné uniquement
+- **LOCALISATION et NOMMAGE** : `{project-root}/{module}/__tests__/.cursor/rules/specification-{module}-tests.mdc`
+- **STRUCTURE et CONTENU** : structure selon @template-specification.md adaptée au contexte tests
+
 ### Toutes les spécifications générales
 
 #### Règles obligatoires à appliquer
