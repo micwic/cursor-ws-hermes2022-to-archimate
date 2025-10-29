@@ -6,7 +6,7 @@ alwaysApply: true
 # agent-ai-generation-governance.mdc: Gouvernance de la génération de contenu par l'IA optimisée pour Cursor
 
 > Créé le : 2025-08-18
-> Dernière mise à jour : 2025-10-15
+> Dernière mise à jour : 2025-10-29
 
 ## Objectifs de la règle
 
@@ -27,7 +27,7 @@ alwaysApply: true
 - L'IA utilise exclusivement la fonctionnalité Plan intégrée de Cursor pour les tâches complexes
 - L'IA consulte et valide les spécifications avant d'activer le mode Plan
 - L'utilisateur valide les plans via l'interface de Cursor avant exécution
-- L'IA sauvegarde automatiquement le plan après exécution (build ) dans .cursor/plans à la racine du projet principal concerné (pas du workspace préfixé avec cursor-ws-*)
+- L'IA sauvegarde automatiquement le plan après exécution (build) dans .cursor/executed-plans à la racine du projet principal concerné (pas du workspace préfixé avec cursor-ws-*)
 - La traçabilité est assurée automatiquement par les mécanismes intégrés de Cursor
 - Les références officielles sont utilisées à tous les niveaux du processus
 
@@ -48,7 +48,7 @@ alwaysApply: true
 - **ACTIVER MODE PLAN** : Utiliser systématiquement la fonctionnalité Plan intégrée de Cursor pour toute génération complexe nécessitant validation
 - **INTÉGRER SPÉCIFICATIONS** : S'assurer que les spécifications du projet sont consultées et mises à jour avant d'activer le mode Plan
 - **VALIDER CONTEXTE** : Vérifier l'alignement entre l'intention utilisateur et les spécifications avant de générer un plan
-- **SAUVEGARDER AUTOMATIQUEMENT** : Après l'exécution complète du plan, l'IA sauvegarde automatiquement le plan dans `.cursor/plans/YYYY-MM-DD-description.md` à la racine du projet principal concerné (pas du workspace préfixé avec cursor-ws-*)
+- **SAUVEGARDER AUTOMATIQUEMENT** : Après l'exécution complète du plan, l'IA sauvegarde automatiquement le plan dans `.cursor/executed-plans/YYYY-MM-DD-description.md` à la racine du projet principal concerné (pas du workspace préfixé avec cursor-ws-*)
 - **FIABILITE REFERENCES** : Il est formellement interdit de baser ses recherches et ses réflexions sur la base de supposition ou de référence peu fiable. Les références officielles doivent être utilisées pour :
   - **Élaborer les spécifications** : Sources documentaires officielles uniquement
   - **Créer les plans d'exécution** : Documentation officielle et spécifications validées
@@ -66,7 +66,7 @@ alwaysApply: true
 - Spécifications consultées et alignées avec l'intention utilisateur avant activation du mode Plan
 - Fonctionnalité Plan de Cursor utilisée pour les modifications complexes nécessitant validation
 - Accord utilisateur explicite obtenu via la fonctionnalité Plan de Cursor
-- Plan sauvegardé automatiquement dans `.cursor/plans/` du projet principal après exécution complète
+- Plan sauvegardé automatiquement dans `.cursor/executed-plans/` du projet principal après exécution complète
 - Traçabilité assurée via fichier de plan et commit Git
 
 #### Exemples d'utilisation de la fonctionnalité Plan de Cursor
@@ -85,7 +85,7 @@ Processus avec fonctionnalité Plan de Cursor :
 2. **Intégration des spécifications** : Le plan généré doit respecter les spécifications validées
 3. **Validation utilisateur** : Accord explicite obtenu via l'interface de Cursor
 4. **Exécution contrôlée** : Réalisation selon le plan approuvé
-5. **Sauvegarde automatique** : L'IA sauvegarde le plan dans `.cursor/plans/YYYY-MM-DD-description.md` du projet principal
+5. **Sauvegarde automatique** : L'IA sauvegarde le plan dans `.cursor/executed-plans/YYYY-MM-DD-description.md` du projet principal
 6. **Traçabilité Git** : L'IA propose de commiter le plan avec les changements effectués
 
 ##### ✅ Correct — Respect des références officielles
@@ -107,4 +107,4 @@ Pendant génération du plan :
 - **Procédé manuel concurrent** : Créer des fichiers de plan personnalisés au lieu d'utiliser la fonctionnalité Plan de Cursor
 - **Références non fiables** : Utiliser des suppositions ou de la documentation non officielle
 - **Validation implicite** : Procéder sans accord utilisateur explicite via l'interface de Cursor
-- **Plan non sauvegardé** : Ne pas sauvegarder le plan après exécution complète → L'IA doit systématiquement créer le fichier dans `.cursor/plans/`
+- **Plan non sauvegardé** : Ne pas sauvegarder le plan après exécution complète → L'IA doit systématiquement créer le fichier dans `.cursor/executed-plans/`
