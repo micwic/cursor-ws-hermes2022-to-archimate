@@ -6,7 +6,7 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : [2025-08-19]
+> Dernière mise à jour : [2025-10-29]
 
 ## Objectifs de la règle
 
@@ -32,6 +32,27 @@ alwaysApply: true
 - Les spécifications détaillées sont issues des processus itératifs des principes Behavior Driven Development
 - Elles complètent et détaillent les spécifications générales sans les remplacer
 - Elles respectent les principes de ségrégation des domaines
+
+## Principe : Spécifications générales vs spécifications détaillées
+
+### Spécifications générales (fichiers `.mdc` de règles/spécifications)
+
+- **Contenu** : Décisions architecturales et techniques justifiées, patterns validés avec exemples minimalistes, anti-patterns avec solutions recommandées, état d'implémentation
+- **Objectif** : Documenter les choix de conception et les principes directeurs
+- **Niveau de détail** : Succinct, éviter la redondance avec les fichiers BDD
+
+### Spécifications détaillées (fichiers BDD)
+
+- **`.feature`** : Scénarios Gherkin exhaustifs (Given/When/Then) décrivant tous les comportements attendus
+- **`.steps.ts`** : Implémentation complète des steps avec mocking, assertions et logique de test
+- **Objectif** : Définir précisément le comportement attendu du code
+- **Niveau de détail** : Exhaustif et exécutable
+
+### Règle de non-redondance
+
+- **Les spécifications générales ne doivent PAS dupliquer le contenu des fichiers `.feature` et `.steps.ts`**
+- **Les fichiers `.feature` et `.steps.ts` représentent les spécifications détaillées exécutables**
+- **Les spécifications générales documentent uniquement les décisions et patterns, pas les scénarios détaillés**
 
 ## Règles à appliquer
 
