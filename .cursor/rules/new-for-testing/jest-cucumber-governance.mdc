@@ -1,0 +1,224 @@
+---
+description: "Gouvernance pratique des outils Jest et jest-cucumber (commandes, patterns, structure)"
+alwaysApply: true
+---
+
+# jest-cucumber-governance.mdc : Gouvernance pratique des outils Jest et jest-cucumber
+
+> Créé le : 2025-10-31
+> Dernière mise à jour : 2025-10-31
+
+## Objectifs de la règle
+
+- Définir les patterns et pratiques pour utiliser Jest et jest-cucumber efficacement
+- Standardiser les commandes d'exécution des tests
+- Documenter la structure des fichiers et répertoires de tests
+- Éviter les erreurs courantes lors de l'exécution des tests BDD
+
+## Problèmes résolus/à résoudre
+
+- Confusion entre `--testPathPattern` et `--testPathPatterns`
+- Erreurs de filtrage des tests avec jest-cucumber
+- Incohérence dans l'exécution des tests selon le contexte
+- Manque de documentation sur les bonnes pratiques Jest-Cucumber
+
+## Comportement général attendu
+
+- L'IA utilise systématiquement `--testPathPatterns` (pluriel) pour filtrer les tests par chemin
+- L'IA exécute les tests via `npm test` et non `npx jest` directement
+- L'IA respecte la structure des répertoires définie pour les tests BDD
+- L'IA applique les timeouts conformes à la gouvernance selon le type de test
+
+## Contexte d'application et généralités
+
+- S'applique à tous les projets utilisant Jest et jest-cucumber pour les tests BDD
+- Complète `@bdd-governance.mdc` qui définit les aspects méthodologiques BDD
+- Utilise la configuration Jest partagée et la structure standard des tests
+
+## Règles à appliquer
+
+### Exécution des tests avec Jest
+
+#### Règles obligatoires à appliquer
+
+- **EXÉCUTER VIA NPM** : Toujours utiliser `npm test` ou `npm run test` au lieu de `npx jest` directement
+- **PATTERN PATH PLURIEL** : Utiliser `--testPathPatterns` (pluriel) pour filtrer par chemin de fichier
+- **FILTRAGE PAR CHEMIN** : Préférer le filtrage par chemin plutôt que par nom de test avec jest-cucumber
+
+#### Patterns validés
+
+**Exécution de tous les tests :**
+
+```bash
+npm test
+```
+
+**Filtrage par répertoire :**
+
+```bash
+npm test -- --testPathPatterns="with-external-system"
+```
+
+**Filtrage par fichier spécifique :**
+
+```bash
+npm test -- --testPathPatterns="template-generation"
+```
+
+**Exécution avec options :**
+
+```bash
+npm test -- --testPathPatterns="integration" --verbose --no-coverage
+```
+
+#### Anti-patterns à éviter
+
+- **TESTPATH PATTERN SINGULIER** : Éviter `--testPathPattern` (singulier) → **Solution** : Utiliser `--testPathPatterns` (pluriel) → **Règle à adopter** : Pattern pluriel obligatoire
+- **NOM DE TEST** : Éviter `--testNamePattern` avec jest-cucumber → **Solution** : Filtrer par chemin → **Règle à adopter** : Filtrage par chemin pour jest-cucumber
+- **NPX JEST DIRECT** : Éviter `npx jest` directement → **Solution** : Utiliser `npm test` → **Règle à adopter** : Exécution via npm scripts
+
+#### Justification
+
+- **Pluriel requis** : Jest a remplacé `--testPathPattern` par `--testPathPatterns` (pluriel) dans les versions récentes
+- **Chemin vs Nom** : Avec jest-cucumber, les noms de tests proviennent des scénarios Gherkin, le filtrage par chemin est plus fiable
+- **Scripts npm** : L'utilisation de `npm test` garantit le respect de la configuration Jest du projet
+
+#### État d'implémentation
+
+✅ [Règle documentée - 2025-10-31]
+✅ [Appliquée dans package.json scripts - 2025-10-31]
+
+### Structure des tests d'intégration
+
+#### Règles obligatoires à appliquer
+
+- **RÉPERTOIRES SPÉCIALISÉS** : Organiser les tests selon leur type (réel vs mocké)
+- **SUFFIXE MOCKÉ** : Utiliser le suffixe `-mocked` pour les fichiers de tests mockés
+- **PAIRES FICHIERS** : Placer les fichiers `.feature` et `.steps.ts` côte à côte dans le même répertoire
+
+#### Patterns validés
+
+**Structure standard :**
+
+```
+__tests__/
+  integration/
+    with-external-system/          # Tests avec appels API réels
+      template-generation.feature
+      template-generation.steps.ts
+      nuextract-project-management.feature
+      nuextract-project-management.steps.ts
+    with-external-system-mocked/   # Tests avec système externe mocké
+      template-generation-mocked.feature
+      template-generation-mocked.steps.ts
+      nuextract-project-management-mocked.feature
+      nuextract-project-management-mocked.steps.ts
+```
+
+#### Timeouts selon le type de test
+
+**Tests réels (`with-external-system/`) :**
+
+- Mode async : 120s (timeout dans le test : `120000`)
+- Mode sync : 45s (timeout dans le test : `45000`)
+
+**Tests mockés (`with-external-system-mocked/`) :**
+
+- Tous les tests : 5s (timeout dans le test : `5000`)
+
+#### Exemples
+
+**Test réel avec timeout async :**
+
+```typescript
+test('Génération de template NuExtract avec infer-template-async', ({ given, when, then }) => {
+  // ... steps ...
+}, 120000); // 120s pour mode async
+```
+
+**Test mocké avec timeout court :**
+
+```typescript
+test('Erreur HTTP 500 en mode async', ({ given, when, then }) => {
+  // ... steps ...
+}, 5000); // 5s pour test mocké
+```
+
+#### Anti-patterns à éviter
+
+- **TIMEOUT ABSENT** : Éviter les tests sans timeout explicite → **Solution** : Toujours définir un timeout → **Règle à adopter** : Timeout obligatoire selon le type
+- **TIMEOUT INCONFORME** : Éviter les timeouts non conformes à la gouvernance → **Solution** : Respecter async 120s/sync 45s pour réels, < 5s pour mockés → **Règle à adopter** : Timeouts standardisés
+
+### Configuration Jest-Cucumber
+
+#### Règles obligatoires à appliquer
+
+- **CONFIGURATION STANDARD** : Utiliser `jest.config.js` (pas de nommage personnalisé)
+- **TESTMATCH PATTERN** : Pattern standard `**/__tests__/{unit,integration,e2e}/**/*.steps.{js,ts}`
+- **SETUP FICHIER** : Fichier setup partagé dans `__tests__/support/jest-cucumber-setup.js`
+
+#### Patterns validés
+
+**Configuration Jest standard :**
+
+```javascript
+// jest.config.js
+module.exports = {
+  testMatch: [
+    '**/__tests__/{unit,integration,e2e}/**/*.steps.{js,ts}'
+  ],
+  testEnvironment: 'node',
+  testTimeout: 15000, // Timeout global par défaut
+  setupFilesAfterEnv: [
+    '<rootDir>/__tests__/support/jest-cucumber-setup.js'
+  ]
+};
+```
+
+#### Références
+
+- Voir `@bdd-governance.mdc` pour les aspects méthodologiques BDD
+- Voir `@bdd-cucumber-vscode-plugin-governance.mdc` pour la configuration du plugin VSCode
+
+### Hooks d'isolation des tests
+
+#### Règles obligatoires à appliquer
+
+- **BEFORE/EACH GLOBAL** : Hooks `beforeEach` et `afterEach` au niveau du fichier de tests
+- **CLEANUP SYSTÉMATIQUE** : `jest.clearAllMocks()` dans `beforeEach`, `jest.restoreAllMocks()` dans `afterEach`
+- **ISOLATION COMPLÈTE** : Éviter les effets de bord entre tests
+
+#### Patterns validés
+
+**Hooks globaux dans fichier de tests :**
+
+```typescript
+defineFeature(feature, (test) => {
+  // Hooks d'isolation pour les tests d'intégration
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  // Tests individuels...
+});
+```
+
+#### Références
+
+- Voir `@test-mock-governance.mdc` pour les détails sur l'isolation des mocks
+
+## Validation
+
+- Vérifier que les commandes utilisent `--testPathPatterns` (pluriel)
+- Vérifier que les tests sont exécutés via `npm test`
+- Vérifier que les timeouts sont conformes selon le type de test
+- Vérifier que les hooks d'isolation sont présents dans tous les fichiers de tests
+
+## État d'implémentation
+
+✅ [Règle définie - 2025-10-31]
+🚧 [Application progressive sur les projets BDD]

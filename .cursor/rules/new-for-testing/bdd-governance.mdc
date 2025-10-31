@@ -6,7 +6,7 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : [2025-10-29]
+> Dernière mise à jour : [2025-10-31]
 
 ## Objectifs de la règle
 
@@ -101,8 +101,66 @@ alwaysApply: true
 
 #### Références
 
-- Voir `@bdd-cucumber-vscode-plugin-governance.mdc` (structure des tests et plugin VSCode).
-- Voir la configuration Jest-Cucumber partagée (`cucumber-jest.config.js`).
+- Voir `@jest-cucumber-governance.mdc` (aspects pratiques Jest-Cucumber : commandes, patterns, structure).
+- Voir `@bdd-cucumber-vscode-plugin-governance.mdc` (configuration du plugin VSCode).
+
+### Gestion des messages d'erreur dans les step definitions
+
+#### Règles obligatoires à appliquer
+
+- **PATTERN REGEX AVEC CAPTURE**: Utiliser des expressions régulières avec groupes de capture pour les validations de messages d'erreur
+- **ÉVITER DUPLICATION LITTÉRALE**: Ne pas dupliquer les messages entre fichiers `.feature` et `.steps.ts`
+- **MAINTENABILITÉ**: Un changement de message ne doit nécessiter qu'une modification dans le fichier `.feature`
+
+#### Pattern validé
+
+**Step Gherkin** (`.feature`):
+
+```gherkin
+Alors une erreur contenant "Invalid JSON response" est générée
+```
+
+**Step definition** (`.steps.ts`):
+
+```typescript
+then(/^une erreur contenant "(.*)" est générée$/, (expectedMessage) => {
+  expect(error).toBeDefined();
+  expect(error.message).toContain(expectedMessage);
+});
+```
+
+#### Justification
+
+- **DRY (Don't Repeat Yourself)**: Un seul step réutilisable pour tous les messages
+- **Maintenance simplifiée**: Le message est défini uniquement dans le `.feature`
+- **Couplage réduit**: Moins de dépendances entre `.steps.ts` et `.feature`
+- **Flexibilité**: Facilite les tests avec messages variables
+
+#### Anti-patterns à éviter
+
+- **Duplication littérale**:
+
+  ```typescript
+  // MAUVAIS
+  then('une erreur contenant "Invalid JSON" est générée', () => {
+    expect(error.message).toContain('Invalid JSON'); // Message dupliqué
+  });
+  ```
+
+- **Hardcoding dans step definition**:
+
+  ```typescript
+  // MAUVAIS
+  then(/^une erreur contenant "(.*)" est générée$/, () => {
+    expect(error.message).toContain('Invalid JSON'); // Ignore la capture
+  });
+  ```
+
+#### État d'implémentation
+
+✅ [Appliqué dans tests unitaires - 2025-10-29]
+
+✅ [Harmonisé dans tests intégration mockés - 2025-10-30]
 
 ### Évolution à prévoir
 
