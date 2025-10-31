@@ -180,6 +180,48 @@ module.exports = {
 - Voir `@bdd-governance.mdc` pour les aspects méthodologiques BDD
 - Voir `@bdd-cucumber-vscode-plugin-governance.mdc` pour la configuration du plugin VSCode
 
+### Limitation connue : Plugin Cucumber VSCode avec jest-cucumber
+
+#### Description détaillée
+
+[2025-10-31] Le plugin Cucumber Language Server de VSCode/Cursor est conçu pour Cucumber.js standard (`Given(/^pattern$/, callback)`), pas pour jest-cucumber qui utilise une syntaxe différente (`given('texte exact', callback)` à l'intérieur de `defineFeature()`).
+
+[2025-10-31] Le plugin génère des diagnostics "Undefined step" pour tous les steps définis avec jest-cucumber, même si les tests fonctionnent correctement à l'exécution avec `npm test`.
+
+#### Justification
+
+- **Incompatibilité syntaxe** : Le plugin Cucumber Language Server cherche des patterns regex dans les step definitions classiques Cucumber.js, mais jest-cucumber utilise des chaînes littérales dans `defineFeature()`
+- **Faux positifs** : Les diagnostics "Undefined step" sont des faux positifs - les tests fonctionnent correctement car jest-cucumber gère la correspondance des steps indépendamment du plugin VSCode
+- **Pas de solution technique actuelle** : Aucune configuration du plugin ne permet de désactiver uniquement les diagnostics tout en conservant le formatage automatique Gherkin
+
+#### Tentatives effectuées (échouées)
+
+[2025-10-31] Plusieurs tentatives ont été effectuées pour résoudre cette limitation :
+
+1. **Désactivation des validations** : Configuration `cucumber.validate: false`, `cucumber.diagnostics: false`, `cucumber.enable: false` → Les diagnostics persistent malgré ces paramètres
+2. **Association plaintext** : Changement de `"*.feature": "cucumber"` vers `"*.feature": "plaintext"` → Les diagnostics disparaissent mais le formatage automatique Gherkin est perdu (indentation spécifique par type de ligne)
+3. **Configuration hybride** : Tentative de désactiver les diagnostics tout en gardant l'association `"cucumber"` → Les diagnostics réapparaissent dès que l'association `"cucumber"` est restaurée
+
+#### Limitations acceptées
+
+[2025-10-31] Après échec des tentatives de résolution, la limitation est acceptée :
+
+- **Diagnostics visuels persistants** : Les erreurs "Undefined step" apparaissent dans l'éditeur mais n'affectent pas l'exécution des tests
+- **Configuration initiale conservée** : L'association `"*.feature": "cucumber"` est conservée pour préserver le formatage automatique Gherkin et l'indentation spécifique selon les règles Gherkin (Fonctionnalité: 0, Scénario: 1, Étant donné: 2, etc.)
+- **Tests fonctionnels** : Les tests s'exécutent correctement avec `npm test` (jest-cucumber fonctionne indépendamment du plugin VSCode)
+
+#### Validation
+
+- Les tests s'exécutent correctement avec `npm test` (jest-cucumber fonctionne indépendamment du plugin)
+- Les diagnostics "Undefined step" dans l'éditeur sont ignorés (faux positifs connus)
+- Le formatage automatique Gherkin est préservé (indentation spécifique selon les règles Gherkin)
+
+#### État d'implémentation
+
+✅ [Limitation identifiée et documentée - 2025-10-31]
+❌ [Tentatives de résolution échouées - 2025-10-31]
+✅ [Limitation acceptée et documentée dans jest-cucumber-governance.mdc]
+
 ### Hooks d'isolation des tests
 
 #### Règles obligatoires à appliquer
