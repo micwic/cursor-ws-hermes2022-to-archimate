@@ -1,0 +1,217 @@
+---
+description: Gouvernance du logging Javascript (console.log, console.error, traçabilité)
+alwaysApply: true
+---
+
+# logging-governance.mdc : Gouvernance du logging Javascript
+
+> Créé le : 2025-11-01
+> Dernière mise à jour : 2025-11-01
+
+## Objectifs de la règle
+
+- Harmoniser le logging Javascript dans les fonctions
+- Assurer la traçabilité des exécutions (entrée de fonction)
+- Fournir des messages de log clairs et contextualisés
+- Faciliter le débogage et la maintenance
+- Éviter les refactorings de tests excessifs lors de la maintenance corrective et évolutive
+
+## Problèmes résolus/à résoudre
+
+- Absence de journalisation en entrée de fonction → difficulté de traçabilité
+- Messages de log génériques sans contexte fonctionnel → difficulté d'identification de la source
+- Incohérence dans l'utilisation de `console.log()` vs `console.error()`
+- Tests de logging trop stricts nécessitant des refactorings fréquents lors de la maintenance
+
+## Comportement général attendu
+
+- L'IA et l'utilisateur appliquent systématiquement les patterns définis ci-dessous
+- Les messages de log sont contextualisés et permettent d'identifier rapidement la fonction source
+- Les tests de logging utilisent une validation flexible (presence et fragments plutôt que contenu exact)
+
+## Contexte d'application et généralités
+
+- S'applique à tout le code JavaScript/TypeScript
+- Utilise `console.log()` pour information et traçabilité
+- Utilise `console.error()` pour erreurs avant propagation
+- Compatible avec Node.js 16+ et les frameworks de test (Jest, Jest-Cucumber)
+
+## Règles à appliquer
+
+### Pattern 1 : Journalisation en entrée de fonction
+
+#### Description
+
+Utiliser pour tracer l'entrée des fonctions d'orchestration afin de faciliter le débogage et la traçabilité des exécutions.
+
+#### Pattern validé
+
+```javascript
+async function loadInstructions(config) {
+  // Journalisation en entrée de fonction pour traçabilité (bonne pratique reconnue)
+  console.log(`[info] Chargement des instructions depuis config.nuextract.templateTransformationInstructions.instructions`);
+  
+  try {
+    // ... logique métier ...
+    return instructions;
+  } catch (error) {
+    console.error(`Erreur lors du chargement des instructions: ${error.message}`);
+    throw error;
+  }
+}
+```
+
+#### Règles
+
+- **Préfixe `[info]`** : Utiliser `[info]` pour identifier les messages d'information (facilite le filtrage dans les logs)
+- **Message contextualisé** : Identifier clairement la fonction et l'action effectuée
+- **Position** : En début de fonction, avant toute logique métier
+- **Formatage** : Utiliser template literals pour inclure des paramètres si nécessaire
+
+#### Anti-Patterns
+
+- ❌ Absence de journalisation en entrée : Ne pas logger l'entrée de fonction → difficulté de traçabilité
+- ❌ Message générique : `console.log('Loading...')` → manque de contexte fonctionnel
+- ❌ Position incorrecte : Logger après des opérations → perte de traçabilité initiale
+
+### Pattern 2 : Journalisation en sortie de fonction (succès)
+
+#### Description
+
+Utiliser pour tracer la sortie réussie des fonctions afin de valider le déroulement normal des opérations.
+
+#### Pattern validé
+
+```javascript
+async function loadInstructions(config) {
+  console.log(`[info] Chargement des instructions depuis config.nuextract.templateTransformationInstructions.instructions`);
+  
+  try {
+    const instructionsArray = config.nuextract.templateTransformationInstructions.instructions;
+    const instructions = instructionsArray.join('\n');
+    
+    // Journalisation en sortie de fonction pour validation du succès
+    console.log(`[info] Instructions chargées depuis config.nuextract.templateTransformationInstructions.instructions (${instructionsArray.length} instructions)`);
+    return instructions;
+  } catch (error) {
+    console.error(`Erreur lors du chargement des instructions: ${error.message}`);
+    throw error;
+  }
+}
+```
+
+#### Règles
+
+- **Préfixe `[info]`** : Utiliser `[info]` pour identifier les messages d'information
+- **Message contextualisé** : Indiquer le résultat de l'opération avec contexte utile (ex: nombre d'éléments traités)
+- **Position** : Avant le return, après le traitement réussi
+- **Informations utiles** : Inclure des métriques pertinentes si applicables (nombre d'éléments, durées, etc.)
+
+#### Anti-Patterns
+
+- ❌ Message trop verbeux : Inclure trop de détails techniques non pertinents
+- ❌ Message trop vague : `console.log('Done')` → manque de contexte
+
+### Pattern 3 : Journalisation d'erreur avant propagation
+
+#### Description
+
+Utiliser pour logger les erreurs avant leur propagation dans les fonctions d'orchestration, en complément du pattern de gestion d'erreur (@error-handling-governance Pattern 3).
+
+#### Pattern validé
+
+```javascript
+async function loadInstructions(config) {
+  console.log(`[info] Chargement des instructions depuis config.nuextract.templateTransformationInstructions.instructions`);
+  
+  try {
+    // ... logique métier ...
+    return instructions;
+  } catch (error) {
+    // Message contextualisé pour identifier facilement la fonction (bonne pratique reconnue)
+    console.error(`Erreur lors du chargement des instructions: ${error.message}`);
+    throw error; // Propagation simple avec préservation de la stack trace
+  }
+}
+```
+
+#### Règles
+
+- **Utiliser `console.error()`** : Réservé aux erreurs (différencié de `console.log()` pour l'information)
+- **Message contextualisé** : Le message doit identifier clairement la fonction pour faciliter le débogage
+- **Format standardisé** : `"Erreur lors de {action}: {message d'erreur}"`
+- **Avant propagation** : Logger avant `throw error` pour préserver la stack trace
+
+#### Anti-Patterns
+
+- ❌ Message générique : `console.error('Erreur:', error.message)` → manque de contexte fonctionnel
+- ❌ Propagation sans logging : `catch (error) { throw error; }` → perte de traçabilité
+- ❌ Utilisation de `console.log()` pour erreurs : Ne pas différencier erreurs et informations
+
+### Tableau récapitulatif des patterns
+
+| Contexte | Pattern | Exemple | Utilisation |
+|:---------|:--------|:--------|:-----------|
+| Entrée de fonction | `console.log()` avec `[info]` | `console.log('[info] Chargement des instructions...')` | Traçabilité exécution |
+| Sortie réussie | `console.log()` avec `[info]` | `console.log('[info] Instructions chargées (2 instructions)')` | Validation succès |
+| Erreur avant propagation | `console.error()` contextualisé | `console.error('Erreur lors du chargement des instructions: ...')` | Traçabilité erreur |
+
+## Validation flexible dans les tests
+
+### Principe de validation flexible
+
+Les tests de logging doivent valider la **présence** et des **fragments pertinents** des logs plutôt que leur contenu exact pour éviter des refactorings de tests excessifs lors de la maintenance corrective et évolutive.
+
+### Pattern validé pour tests
+
+```typescript
+// ✅ Correct : Validation flexible avec toContain()
+test('Vérification présence console.log() en entrée', ({ given, when, then }) => {
+  given('une configuration valide', () => {
+    config = { nuextract: { templateTransformationInstructions: { instructions: [...] } } };
+    jest.spyOn(console, 'log').mockImplementation();
+  });
+  
+  when('on charge les instructions', async () => {
+    await loadInstructions(config);
+  });
+  
+  then('un message console.log() est émis en entrée de fonction', () => {
+    expect(console.log).toHaveBeenCalled();
+  });
+  
+  and('le message contient une référence à "instructions" ou "chargement"', () => {
+    const calls = (console.log as jest.Mock).mock.calls;
+    const lastCall = calls[calls.length - 1][0];
+    expect(lastCall).toContain('instructions'); // Validation flexible avec toContain()
+  });
+});
+```
+
+#### Règles pour tests de logging
+
+- **Valider la présence** : Vérifier que `console.log()` ou `console.error()` a été appelé
+- **Validation flexible** : Utiliser `toContain()` pour vérifier des fragments pertinents plutôt que le contenu exact
+- **Fragments pertinents** : Vérifier la présence de mots-clés contextuels (nom de fonction, action, etc.)
+- **Éviter validations strictes** : Ne pas valider le contenu exact complet du message pour éviter les refactorings fréquents
+
+#### Anti-Patterns pour tests
+
+- ❌ Validation stricte du contenu : `expect(logMessage).toBe('[info] Chargement des instructions depuis config.nuextract.templateTransformationInstructions.instructions')` → fragile, nécessite refactoring à chaque modification de message
+- ❌ Validation de formatage exact : Valider les espaces, la ponctuation exacte → trop strict
+- ❌ Validation de chaînes complètes : Tester des messages longs dans leur intégralité → maintenance coûteuse
+
+## Validation
+
+- Vérifier que toutes les fonctions d'orchestration ont un `console.log()` en entrée
+- Vérifier que les erreurs sont loggées avec `console.error()` avant propagation
+- Vérifier que les messages de log sont contextualisés (identifient la fonction)
+- Vérifier que les tests de logging utilisent une validation flexible (`toContain()` plutôt que contenu exact)
+
+## État d'implémentation
+
+🚧 [En cours de définition - 2025-11-01]
+
+- ✅ Règle définie et documentée
+- 🚧 À implémenter : Application progressive sur les fonctions existantes
+- 🚧 À implémenter : Tests de validation flexible des logs (dans fichiers séparés pour expérimentation)

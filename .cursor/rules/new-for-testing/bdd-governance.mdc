@@ -6,7 +6,7 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : [2025-10-31]
+> Dernière mise à jour : 2025-11-01
 
 ## Objectifs de la règle
 
@@ -106,7 +106,7 @@ alwaysApply: true
 
 ### Gestion des messages d'erreur dans les step definitions
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires à appliquer pour les messages d'erreur
 
 - **PATTERN REGEX AVEC CAPTURE**: Utiliser des expressions régulières avec groupes de capture pour les validations de messages d'erreur
 - **ÉVITER DUPLICATION LITTÉRALE**: Ne pas dupliquer les messages entre fichiers `.feature` et `.steps.ts`
@@ -161,6 +161,91 @@ then(/^une erreur contenant "(.*)" est générée$/, (expectedMessage) => {
 ✅ [Appliqué dans tests unitaires - 2025-10-29]
 
 ✅ [Harmonisé dans tests intégration mockés - 2025-10-30]
+
+### Structure des tests d'intégration
+
+#### Règles obligatoires à appliquer pour la structure des tests
+
+- **SÉPARATION RÉEL/MOCKÉ** : Organiser les tests selon leur type (réel vs mocké)
+- **RÉPERTOIRES SPÉCIALISÉS** : Utiliser des répertoires distincts pour les tests avec appels API réels et les tests avec mocks
+- **SUFFIXE MOCKÉ** : Utiliser le suffixe `-mocked` pour les fichiers de tests mockés
+- **PAIRES FICHIERS** : Placer les fichiers `.feature` et `.steps.ts` côte à côte dans le même répertoire
+
+#### Patterns validés
+
+**Structure standard pour tests d'intégration :**
+
+```text
+__tests__/
+  integration/
+    with-external-system/          # Tests avec appels API réels
+      template-generation.feature
+      template-generation.steps.ts
+    with-external-system-mocked/   # Tests avec système externe mocké
+      template-generation-mocked.feature
+      template-generation-mocked.steps.ts
+```
+
+#### Portée des mocks (règle)
+
+- **Mocker uniquement les frontières** : Mocker uniquement les composants aux frontières du projet (systèmes externes: APIs, réseau, I/O distants)
+- **Ne pas mocker les modules internes** : Ne pas mocker les modules internes entre eux (cela relève de la conception interne et doit être validé par intégration)
+- **Exception pour tests d'erreur** : Tests de gestion d'erreurs (error-handling) peuvent mocker de manière ciblée pour valider les chemins d'erreurs et les messages, sans dériver vers des tests d'implémentation
+
+#### Timeouts selon le type de test
+
+**Tests réels (`with-external-system/`) :**
+
+- Mode async : 120s (timeout dans le test : `120000`)
+- Mode sync : 45s (timeout dans le test : `45000`)
+
+**Tests mockés (`with-external-system-mocked/`) :**
+
+- Tous les tests : 5s (timeout dans le test : `5000`)
+
+#### Exemples
+
+**Test réel avec timeout async :**
+
+```typescript
+test('Génération de template NuExtract avec infer-template-async', ({ given, when, then }) => {
+  // ... steps ...
+}, 120000); // 120s pour mode async
+```
+
+**Test mocké avec timeout court :**
+
+```typescript
+test('Erreur HTTP 500 en mode async', ({ given, when, then }) => {
+  // ... steps ...
+}, 5000); // 5s pour test mocké
+```
+
+#### Anti-Patterns à éviter
+
+- **TIMEOUT ABSENT** : Éviter les tests sans timeout explicite → **Solution** : Toujours définir un timeout → **Règle à adopter** : Timeout obligatoire selon le type
+- **TIMEOUT INCONFORME** : Éviter les timeouts non conformes à la gouvernance → **Solution** : Respecter async 120s/sync 45s pour réels, < 5s pour mockés → **Règle à adopter** : Timeouts standardisés
+
+#### Bonnes pratiques BDD
+
+- **Fichiers côte à côte** : `.feature` (Gherkin, FR) et `.steps.ts` (jest-cucumber) côte à côte dans le même répertoire
+- **Assertions flexibles** : Utiliser `toContain()` pour les fragments de messages plutôt que le contenu exact, conformément à la gouvernance de gestion d'erreurs
+- **Hooks d'isolation** : Utiliser `beforeEach`/`afterEach` pour restaurer l'état et éviter les effets de bord entre scénarios
+
+#### Nommage et lisibilité
+
+- **Suffixe mocké** : Les fichiers mockés portent systématiquement le suffixe `-mocked`
+- **Noms explicites** : Les répertoires `with-external-system/` et `with-external-system-mocked/` rendent explicite le périmètre (réel vs mocké)
+
+#### Critères de validation pour tests d'intégration
+
+- **Tests réels** : Les scénarios réels doivent pouvoir s'exécuter sans modification des steps en présence d'une configuration valide (clé API, endpoints accessibles)
+- **Tests mockés** : Les scénarios mockés doivent passer sans dépendance réseau et couvrir les erreurs clés (HTTP/timeout/JSON/propagation) ainsi que l'orchestration côté client
+
+#### Références pratiques
+
+- Voir `@jest-cucumber-governance.mdc` (workspace) pour les aspects pratiques : commandes d'exécution (`--testPathPatterns`), timeouts, structure détaillée
+- Voir `@test-mock-governance.mdc` pour les détails sur l'isolation des mocks
 
 ### Évolution à prévoir
 

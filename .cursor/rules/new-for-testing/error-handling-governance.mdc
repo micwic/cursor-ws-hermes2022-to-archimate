@@ -6,7 +6,7 @@ alwaysApply: true
 # error-handling-governance.mdc : Gouvernance de la gestion des erreurs Javascript
 
 > Créé le : 2025-10-25
-> Dernière mise à jour : 2025-10-25
+> Dernière mise à jour : 2025-11-01
 
 ## Objectifs de la règle
 
@@ -113,28 +113,36 @@ Utiliser dans les fonctions d'orchestration (qui appellent d'autres fonctions) o
 
 ```javascript
 async function generateTemplate(config, apiKey) {
+  // Journalisation en entrée de fonction pour traçabilité (bonne pratique reconnue)
+  console.log(`[info] Génération du template avec config et apiKey`);
+  
   try {
     const instructions = loadInstructions(); // Fonction qui peut throw
     const schema = loadAndResolveSchemas(); // Fonction qui peut throw
     // ... logique métier ...
     return template;
   } catch (error) {
+    // Message contextualisé pour identifier facilement la fonction (bonne pratique reconnue)
     console.error(`Erreur lors de la génération du template: ${error.message}`);
-    throw error; // Propagation simple avec logging
+    throw error; // Propagation simple avec préservation de la stack trace
   }
 }
 ```
 
 #### Règles
 
+- **Journalisation en entrée** : Ajouter `console.log()` en début de fonction pour traçabilité (bonne pratique reconnue)
 - **Logging obligatoire** : Toujours logger avec `console.error()` avant propagation
-- **Propagation simple** : `throw error` sans modification
-- **Contexte dans le log** : Le message de log ajoute le contexte de la fonction
+- **Message contextualisé** : Le message de log dans le catch doit identifier clairement la fonction pour faciliter le débogage (bonne pratique reconnue)
+- **Propagation simple** : `throw error` sans modification pour préserver la stack trace
+- **try-catch général** : Encapsuler le corps principal de la fonction dans un try-catch général pour capturer toutes les erreurs (bonne pratique reconnue)
 
 #### Anti-Patterns
 
 - ❌ Propagation sans logging : `catch (error) { throw error; }`
 - ❌ Recréation d'erreur : `throw new Error(error.message)` → perd la stack
+- ❌ Message générique : `console.error('Erreur:', error.message)` → manque de contexte fonctionnel
+- ❌ Absence de journalisation en entrée : Ne pas logger l'entrée de fonction → difficulté de traçabilité
 
 ### Pattern 4 : Erreurs HTTP/API avec Promise
 
