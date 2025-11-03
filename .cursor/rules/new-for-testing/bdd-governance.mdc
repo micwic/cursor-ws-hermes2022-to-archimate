@@ -6,7 +6,7 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : 2025-11-01
+> Dernière mise à jour : 2025-11-03
 
 ## Objectifs de la règle
 
@@ -246,6 +246,193 @@ test('Erreur HTTP 500 en mode async', ({ given, when, then }) => {
 
 - Voir `@jest-cucumber-governance.mdc` (workspace) pour les aspects pratiques : commandes d'exécution (`--testPathPatterns`), timeouts, structure détaillée
 - Voir `@test-mock-governance.mdc` pour les détails sur l'isolation des mocks
+
+### Distinction validation technique vs validation métier
+
+#### Règles obligatoires à appliquer pour les tests d'intégration réels
+
+- **DISTINCTION CLAIRE** : Distinguer la validation d'exécution (status retourné) de la validation métier (résultat réel dans le réceptacle de données)
+- **VALIDATION TECHNIQUE** : Vérifier que l'exécution s'est bien déroulée via le status retourné (ex: `result.updated === true`, `result.id` défini)
+- **VALIDATION MÉTIER INDÉPENDANTE** : Pour les opérations modifiant des données, l'intention métier est vérifiée en contrôlant les résultats attendus de manière indépendante à la fonction qui a provoqué le changement, en interrogeant le réceptacle de la donnée (système externe via API, fichier, base de données, etc.)
+- **RÉCEPTACLES DE DONNÉES** : La validation métier interroge le réceptacle approprié selon le type d'opération :
+  - **Système externe** : Appels API dédiés (ex: `getNuExtractProject()`) pour récupérer l'état réel
+  - **Fichiers** : Lecture directe du fichier créé/modifié pour vérifier le contenu
+  - **Bases de données** : Requêtes SQL pour vérifier les données enregistrées
+  - **Autres réceptacles** : Méthode appropriée pour interroger l'état réel des données
+
+#### Patterns validés
+
+**Validation technique (Then)** :
+
+```typescript
+then('le template est mis à jour avec succès', () => {
+  // Validation technique : vérifier que l'exécution s'est bien déroulée
+  expect(updateResult?.updated).toBe(true);
+});
+```
+
+**Validation métier (And) - Système externe via API** :
+
+```typescript
+and('le projet contient le nouveau template', async () => {
+  // Validation métier : récupérer le projet depuis le système externe de manière indépendante
+  // et comparer le template (interroger le réceptacle de données)
+  const project = await getNuExtractProject(
+    config?.nuextract?.baseUrl || 'nuextract.ai',
+    config?.nuextract?.port || 443,
+    config?.nuextract?.projectsPath || '/api/projects',
+    apiKey,
+    updateResult.id
+  );
+  
+  expect(project).toBeDefined();
+  expect(project.template).toBeDefined();
+  expect(project.template.type).toBe('schema');
+  expect(project.template.schema).toBeDefined();
+  
+  // Comparaison profonde du template : structure et contenu
+  expect(JSON.stringify(project.template.schema)).toBe(JSON.stringify(newTemplate));
+});
+```
+
+**Validation métier (And) - Fichier** :
+
+```typescript
+and('le template est créé avec succès dans le répertoire de sortie', () => {
+  // Validation métier : lire le fichier créé de manière indépendante pour vérifier le contenu
+  const templatePath = resolveFromRepoRoot(path.join(templateDirConfig, 'nuextract-template.json'));
+  expect(fs.existsSync(templatePath)).toBe(true);
+  const templateContent = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+  // Comparaison profonde : le template sauvegardé correspond au template retourné
+  expect(template).toEqual(templateContent);
+});
+```
+
+**Validation métier (And) - Base de données** :
+
+```typescript
+and('les données sont enregistrées dans la base de données', async () => {
+  // Validation métier : interroger la base de données de manière indépendante pour vérifier les données
+  const dbResult = await db.query('SELECT * FROM projects WHERE id = ?', [projectResult.id]);
+  expect(dbResult).toBeDefined();
+  expect(dbResult.template).toBeDefined();
+  // Comparaison profonde des données enregistrées
+  expect(JSON.stringify(dbResult.template)).toBe(JSON.stringify(expectedTemplate));
+});
+```
+
+#### Justification
+
+- **Validation technique** : Confirme que l'exécution s'est déroulée sans erreur (infrastructure OK)
+- **Validation métier indépendante** : Confirme que le résultat métier attendu a été effectivement atteint dans le réceptacle de données (intention métier respectée), indépendamment de la fonction qui a provoqué le changement
+- **Robustesse** : La validation métier garantit que le changement a été appliqué réellement dans le réceptacle de données (système externe, fichier, base de données, etc.), pas seulement que la fonction a retourné un status de succès
+- **Indépendance** : En interrogeant directement le réceptacle de données, on évite de dépendre de l'implémentation de la fonction qui a effectué la modification
+
+#### Anti-Patterns à éviter
+
+- **Validation uniquement technique** : Éviter de valider uniquement le status retourné pour les opérations modifiant des données → **Solution** : Ajouter validation métier en interrogeant le réceptacle de données approprié (API, fichier, base de données, etc.) → **Règle à adopter** : Distinction claire technique vs métier
+- **Dépendance à la fonction** : Éviter de valider le résultat métier en se fiant uniquement à la valeur retournée par la fonction qui a provoqué le changement → **Solution** : Interroger directement le réceptacle de données pour vérifier l'état réel → **Règle à adopter** : Validation métier indépendante de l'implémentation
+- **Redondance dans validation métier** : Éviter de re-valider ce qui est déjà validé par la validation technique → **Solution** : Validation métier se concentre sur le résultat réel dans le réceptacle, pas sur le status d'exécution → **Règle à adopter** : Séparation des responsabilités
+
+#### État d'implémentation
+
+✅ [Appliqué dans tests d'intégration - 2025-11-03]
+
+### Principe de non-redondance dans les assertions
+
+#### Règles obligatoires à appliquer
+
+- **ÉVITER REDONDANCE GIVEN/THEN** : Ne pas valider dans `Then` ce qui est déjà validé dans `Given`
+- **DÉLÉGUER AUX FONCTIONS** : Si une fonction interne valide déjà quelque chose, ne pas re-valider dans les tests d'intégration
+- **VÉRIFICATIONS MINIMALES** : Limiter les vérifications dans `Given` et `And` aux vérifications minimales nécessaires pour le contexte du test
+
+#### Patterns validés
+
+**Vérification minimale dans Given** :
+
+```typescript
+given('des paramètres de configuration NuExtract pour la génération du template', async () => {
+  config = await loadGlobalConfig();
+  // Forcer le mode async pour ce scénario réel
+  config.nuextract.templateMode = 'async';
+  // Vérification minimale : les validations détaillées sont effectuées par loadGlobalConfig()
+  expect(config?.nuextract?.templateMode).toBe('async');
+});
+```
+
+**Éviter redondance avec fonctions internes** :
+
+```typescript
+and('des instructions de transformation depuis config', () => {
+  // Validation redondante supprimée : loadInstructions() valide déjà la présence et le type array
+  // Si les instructions sont absentes ou invalides, loadInstructions() lèvera une erreur
+});
+```
+
+#### Justification
+
+- **DRY (Don't Repeat Yourself)** : Éviter de dupliquer les validations déjà effectuées par les fonctions internes
+- **Maintenance simplifiée** : Un changement dans la validation interne ne nécessite pas de modification des tests
+- **Focus sur l'intention** : Les tests d'intégration se concentrent sur l'intention métier, pas sur les détails de validation déjà gérés par les fonctions internes
+
+#### Anti-Patterns à éviter
+
+- **Redondance Given/Then** : Éviter de valider `expect(template).toBeDefined()` dans `Then` si `template` a déjà été validé dans `Given` → **Solution** : Supprimer validation redondante → **Règle à adopter** : Chaque assertion a un objectif distinct
+- **Re-validation interne** : Éviter de re-valider ce qui est déjà validé par `loadGlobalConfig()`, `loadApiKey()`, `loadInstructions()`, etc. → **Solution** : Faire confiance aux fonctions internes et leurs validations → **Règle à adopter** : Vérifications minimales dans tests d'intégration
+
+#### État d'implémentation
+
+✅ [Appliqué dans tests d'intégration - 2025-11-03]
+
+### Profondeur des assertions Then
+
+#### Règles obligatoires à appliquer
+
+- **INTENTION MÉTIER** : Les assertions `Then` doivent valider l'intention métier, pas seulement la présence de variables
+- **RÉSULTAT RÉEL** : Pour les opérations modifiant des données, valider le résultat réel obtenu depuis le réceptacle de données (système externe, fichier, base de données, etc.)
+- **VALIDATION INDÉPENDANTE** : Interroger directement le réceptacle de données de manière indépendante à la fonction qui a provoqué le changement
+- **PROFONDEUR APPROPRIÉE** : La profondeur des assertions doit être proportionnelle à la complexité de l'opération testée
+
+#### Patterns validés
+
+**Assertion Then profonde (validation métier)** :
+
+```typescript
+then('le projet contient le template fourni', async () => {
+  // Validation métier : récupérer le projet depuis le système externe et vérifier le template
+  const project = await getNuExtractProject(
+    config?.nuextract?.baseUrl || 'nuextract.ai',
+    config?.nuextract?.port || 443,
+    config?.nuextract?.projectsPath || '/api/projects',
+    apiKey,
+    projectResult.id
+  );
+  
+  expect(project).toBeDefined();
+  expect(project.template).toBeDefined();
+  expect(project.template.type).toBe('schema');
+  expect(project.template.schema).toBeDefined();
+  
+  // Comparaison profonde du template : structure et contenu
+  expect(JSON.stringify(project.template.schema)).toBe(JSON.stringify(template));
+});
+```
+
+#### Justification
+
+- **Intention métier** : Les tests BDD valident l'intention métier, pas seulement l'exécution technique
+- **Robustesse** : La validation du résultat réel garantit que l'opération a effectivement atteint son objectif métier
+- **Cohérence** : Les assertions profondes assurent la cohérence entre l'intention métier et le résultat effectif
+
+#### Anti-Patterns à éviter
+
+- **Assertion superficielle** : Éviter `expect(template).toBeDefined()` dans `Then` si `template` est déjà validé dans `Given` → **Solution** : Supprimer assertion redondante ou la remplacer par validation métier → **Règle à adopter** : Chaque assertion ajoute de la valeur
+- **Validation uniquement technique** : Éviter de valider uniquement le status retourné sans vérifier le résultat réel dans le réceptacle → **Solution** : Ajouter validation métier en interrogeant le réceptacle approprié (API, fichier, base de données, etc.) → **Règle à adopter** : Profondeur appropriée selon le type d'opération
+- **Dépendance à l'implémentation** : Éviter de valider le résultat en se fiant uniquement à la valeur retournée par la fonction → **Solution** : Interroger directement le réceptacle de données pour obtenir l'état réel → **Règle à adopter** : Validation métier indépendante
+
+#### État d'implémentation
+
+✅ [Appliqué dans tests d'intégration - 2025-11-03]
 
 ### Évolution à prévoir
 
