@@ -6,7 +6,7 @@ alwaysApply: true
 # markdown-formatting-standards.mdc : Standards de formatage Markdown à appliquer aux règles (règles de gouvernance et spécifications)
 
 > Créé le : 2025-08-14
-> Dernière mise à jour : 2025-10-14
+> Dernière mise à jour : 2025-11-09
 
 ## Objectifs de la règle
 
@@ -41,6 +41,7 @@ alwaysApply: true
 - **Longueur lignes** : Maximum 80 caractères par ligne (MD013)
 - **Espace en fin de ligne** : Pas d'espace en fin de ligne (MD009)
 - **Listes cohérentes** : Espace après tirets/astérisques (MD006)
+- **Style gras** : Utiliser le style `__gras__` (underscores) pour la mise en évidence forte (MD050)
 - **Liens valides** : URLs valides et accessibles (MD011)
 - **Exception pour sauts de ligne dans tableaux** : Autorisation d'utiliser `<br>` dans les cellules de tableau pour assurer les sauts de ligne (transgression MD033 acceptée pour lisibilité)
 - **Vérification, correction et validation** :  Valider le formatage markdown et faire les corrections nécessaires avant d'enregistrer les changements dans un fichier
@@ -51,6 +52,7 @@ alwaysApply: true
 - **Listes sans espace** : Listes collées au contenu précédent/suivant
 - **Listes mal formatées** : Espace manquant après marqueurs liste
 - **Lignes trop longues** : Dépassement 80 caractères
+- **Gras en astérisques** : Usage de `**gras**` au lieu de `__gras__`
 - **Indentation incohérente** : Mélange espaces/tabulations
 - **En-tête YAML du fichier** Modifier le formattage de l'en-tête YAML du fichier qui doit impérativement rester au format YAML original
 
