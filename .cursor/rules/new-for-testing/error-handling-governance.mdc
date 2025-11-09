@@ -206,17 +206,69 @@ async function getNuExtractProjects(apiKey) {
 | Orchestration | Propagation + log | `console.error(...); throw error;` | ✅ Oui |
 | HTTP/API Promise | reject Error | `reject(new Error('API error', { cause: err }))` | ✅ Oui (avec cause) |
 
+## Organisation des tests de gestion d'erreur
+
+### Règles obligatoires à appliquer
+
+- **ORGANISATION PAR SCRIPT** : Les tests de gestion d'erreur sont organisés par script source (fichier `.js`)
+- **NOMMAGE** : Les fichiers de tests suivent le pattern `{script-name}-error-handling.feature` et `{script-name}-error-handling.steps.ts`
+- **LOCALISATION** : Les tests sont localisés dans `__tests__/unit/` pour les tests unitaires avec mocking
+- **COUPLAGE** : Chaque fichier de tests couvre toutes les fonctions d'un script source unique
+
+### Patterns validés
+
+**Structure standard** :
+
+```text
+__tests__/unit/
+├── nuextract-client-error-handling.feature
+├── nuextract-client-error-handling.steps.ts
+├── nuextract-api-error-handling.feature
+└── nuextract-api-error-handling.steps.ts
+```
+
+**Exemple** : `nuextract-client-error-handling.feature/steps.ts` teste toutes les fonctions de `nuextract-client.js` :
+- `loadGlobalConfig`
+- `loadApiKey`
+- `loadInstructions`
+- `loadAndResolveSchemas`
+- `generateTemplate`
+- `findOrCreateProject`
+- `fetchHtmlContent`
+- `collectHtmlSourcesAndInstructions`
+- `buildExtractionPrompt`
+- `buildBlockPrompt`
+- `recomposeArtifact`
+- `mergeJsonAtPath`
+
+**Exemple** : `nuextract-api-error-handling.feature/steps.ts` teste toutes les fonctions de `nuextract-api.js` :
+- `inferTemplateFromDescription`
+- `inferTemplateFromDescriptionAsync`
+- `getJobStatus`
+- `pollJobUntilComplete`
+- `getNuExtractProjects`
+- `createNuExtractProject`
+- `putProjectTemplate`
+
+### Anti-Patterns à éviter
+
+- **Tests par fonction** : Éviter de créer un fichier de tests par fonction → **Solution** : Organiser par script → **Règle à adopter** : Un fichier de tests par script source
+- **Tests par domaine métier** : Éviter d'organiser les tests par domaine métier (ex: `hermes2022-concepts-extraction-error-handling`) → **Solution** : Organiser par script → **Règle à adopter** : Organisation par script source
+- **Mélange de scripts** : Éviter de tester des fonctions de plusieurs scripts dans un même fichier → **Solution** : Séparer par script → **Règle à adopter** : Un script = un fichier de tests
+
 ## Validation
 
 - Vérifier que tous les `throw` et `reject` utilisent le pattern approprié
 - Vérifier la présence de logging avant propagation
 - Vérifier l'utilisation d'Error Cause quand applicable
 - Tester que les messages d'erreur sont clairs et contextualisés
+- Vérifier que les tests sont organisés par script source (fichier `.js`)
 
 ## État d'implémentation
 
 🚧 [En cours de déploiement - 2025-10-25]
 
 - ✅ Règle définie et documentée
+- ✅ Organisation par script documentée et appliquée
 - 🚧 À implémenter : Mise à niveau du code existant
 - 🚧 À implémenter : Tests de validation des messages d'erreur
