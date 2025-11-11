@@ -1,0 +1,250 @@
+---
+description: Gouvernance des tests de contraintes architecturales
+alwaysApply: true
+---
+
+# architectural-constraints-testing.mdc : Gouvernance des tests de contraintes architecturales
+
+> Créé le : 2025-11-09
+> Dernière mise à jour : 2025-11-09
+
+## Objectifs de la règle
+
+- Garantir que les contraintes architecturales explicites sont validées automatiquement
+- Prévenir les dérives architecturales non détectées
+- Assurer la cohérence entre spécifications et implémentation
+- Détecter précocement les violations de contraintes
+
+## Problèmes résolus/à résoudre
+
+- Dérive architecturale non détectée (ex: JArchi → Node.js)
+- Introduction progressive de dépendances incompatibles
+- Absence de validation automatique des contraintes non-fonctionnelles
+- Découverte tardive des incompatibilités architecturales
+
+## Comportement général attendu
+
+- L'IA crée systématiquement des tests de conformité architecturale pour tout projet avec contraintes explicites
+- L'utilisateur valide que les tests couvrent toutes les contraintes architecturales
+- Les tests architecturaux sont exécutés à chaque génération/modification de code
+- Toute violation de contrainte déclenche une alerte immédiate
+
+## Contexte d'application et généralités
+
+- S'applique à tous les projets avec contraintes architecturales explicites
+- Complète les tests fonctionnels (BDD, unitaires, intégration)
+- Les contraintes architecturales incluent : compatibilité runtime, dépendances autorisées, patterns obligatoires, limitations techniques
+
+## Règles à appliquer
+
+### Identification des contraintes architecturales
+
+#### Règles obligatoires à appliquer
+
+- **IDENTIFIER CONTRAINTES** : Lister toutes les contraintes architecturales explicites dans les spécifications
+- **DOCUMENTER CONTRAINTES** : Chaque contrainte doit être documentée avec sa justification
+- **CATÉGORISER CONTRAINTES** : Classer par type (runtime, dépendances, patterns, limitations)
+
+#### Types de contraintes architecturales
+
+- **Runtime** : Environnement d'exécution requis (JArchi, Node.js, Browser, Serverless, Edge)
+- **Dépendances** : Packages autorisés/interdits, versions requises
+- **Patterns** : Architectures obligatoires (SOLID, DDD, Microservices)
+- **Limitations** : Taille mémoire, timeout, bande passante, API disponibles
+
+### Création des tests de conformité
+
+#### Règles obligatoires à appliquer
+
+- **TESTS AUTOMATISÉS** : Créer des tests automatisés pour chaque contrainte
+- **EXÉCUTION SYSTÉMATIQUE** : Intégrer dans la suite de tests principale
+- **FEEDBACK IMMÉDIAT** : Messages d'erreur clairs indiquant la contrainte violée
+- **LOCALISATION** : Tests dans `__tests__/architectural-constraints/`
+
+#### Patterns validés pour les tests de conformité
+
+**Test de compatibilité JArchi** :
+
+```javascript
+// __tests__/architectural-constraints/jarchi-compatibility.test.js
+const fs = require('fs');
+const path = require('path');
+
+describe('Compatibilité JArchi', () => {
+  const jarchiFiles = [
+    'src/jarchi-loader.js',
+    'src/jarchi-utils.js'
+  ];
+
+  test.each(jarchiFiles)('Aucune dépendance Node.js dans %s', (filePath) => {
+    const code = fs.readFileSync(filePath, 'utf8');
+    
+    // Vérifier absence de require() Node.js
+    expect(code).not.toMatch(/require\(['"]fs['"]\)/);
+    expect(code).not.toMatch(/require\(['"]https?['"]\)/);
+    expect(code).not.toMatch(/require\(['"]path['"]\)/);
+    expect(code).not.toMatch(/require\(['"]find-up['"]\)/);
+    
+    // Vérifier absence de packages npm
+    expect(code).not.toMatch(/require\(['"]ajv['"]\)/);
+    expect(code).not.toMatch(/require\(['"]jsonwebtoken['"]\)/);
+    expect(code).not.toMatch(/require\(['"]html-to-text['"]\)/);
+  });
+
+  test.each(jarchiFiles)('Utilisation API Java dans %s', (filePath) => {
+    const code = fs.readFileSync(filePath, 'utf8');
+    
+    // Vérifier présence d'API Java pour I/O
+    if (code.includes('HTTP') || code.includes('http')) {
+      expect(code).toMatch(/Java\.type\(['"]java\.net\.http/);
+    }
+    
+    if (code.includes('file') || code.includes('File')) {
+      expect(code).toMatch(/Java\.type\(['"]java\.nio\.file/);
+    }
+  });
+});
+```
+
+**Test de dépendances autorisées** :
+
+```javascript
+// __tests__/architectural-constraints/dependencies.test.js
+const packageJson = require('../../package.json');
+
+describe('Dépendances autorisées', () => {
+  const allowedDependencies = [
+    'ajv',
+    'ajv-formats',
+    'jsonwebtoken',
+    'html-to-text',
+    'find-up',
+    '@apidevtools/json-schema-ref-parser'
+  ];
+
+  test('Uniquement dépendances autorisées dans devDependencies', () => {
+    const deps = Object.keys(packageJson.devDependencies || {});
+    const testDeps = deps.filter(d => !d.startsWith('jest') && !d.startsWith('@babel'));
+    
+    testDeps.forEach(dep => {
+      expect(allowedDependencies).toContain(dep);
+    });
+  });
+
+  test('Aucune dépendance en production', () => {
+    expect(packageJson.dependencies).toBeUndefined();
+  });
+});
+```
+
+**Test de patterns architecturaux** :
+
+```javascript
+// __tests__/architectural-constraints/solid-patterns.test.js
+const fs = require('fs');
+
+describe('Patterns SOLID', () => {
+  test('Module API ne contient pas de logique métier', () => {
+    const apiCode = fs.readFileSync('src/nuextract-api.js', 'utf8');
+    
+    // Vérifier absence de fallbacks (logique métier)
+    expect(apiCode).not.toMatch(/\|\|.*['"]default/);
+    expect(apiCode).not.toMatch(/config\?\.nuextract/);
+  });
+
+  test('Module client utilise Dependency Injection', () => {
+    const clientCode = fs.readFileSync('src/nuextract-client.js', 'utf8');
+    
+    // Vérifier absence de variables globales
+    expect(clientCode).not.toMatch(/^const GLOBAL_/m);
+    expect(clientCode).not.toMatch(/^let GLOBAL_/m);
+  });
+});
+```
+
+#### Anti-Patterns pour les tests de conformité à éviter
+
+- **Tests manuels** : Éviter de valider les contraintes manuellement → **Solution** : Tests automatisés → **Règle à adopter** : Automatisation obligatoire
+- **Tests incomplets** : Éviter de ne tester qu'une partie des contraintes → **Solution** : Couverture exhaustive → **Règle à adopter** : Une contrainte = un test
+- **Messages vagues** : Éviter "Test failed" → **Solution** : Message explicite avec contrainte violée → **Règle à adopter** : Feedback clair
+
+### Intégration dans le workflow
+
+#### Règles obligatoires à appliquer
+
+- **CI/CD** : Exécuter les tests architecturaux dans la pipeline CI/CD
+- **PRE-COMMIT** : Optionnel mais recommandé pour feedback immédiat
+- **DOCUMENTATION** : Documenter les contraintes dans les spécifications
+- **MAINTENANCE** : Mettre à jour les tests lors de changements de contraintes
+
+#### Patterns validés pour l'intégration
+
+**Script npm** :
+
+```json
+{
+  "scripts": {
+    "test": "jest",
+    "test:arch": "jest --testPathPattern=architectural-constraints",
+    "test:all": "npm run test:arch && npm test"
+  }
+}
+```
+
+**Configuration Jest** :
+
+```javascript
+// jest.config.js
+module.exports = {
+  testMatch: [
+    '**/__tests__/**/*.test.{js,ts}',
+    '**/__tests__/architectural-constraints/**/*.test.{js,ts}'
+  ]
+};
+```
+
+### Validation et maintenance
+
+#### Règles obligatoires à appliquer
+
+- **REVUE RÉGULIÈRE** : Vérifier que les tests couvrent toutes les contraintes
+- **MISE À JOUR** : Adapter les tests lors de changements architecturaux
+- **DOCUMENTATION** : Maintenir la cohérence spécifications ↔ tests
+- **ALERTES** : Configurer des alertes pour violations de contraintes
+
+## Exemples de contraintes architecturales
+
+### ✅ Contraintes bien définies
+
+- **JArchi** : "Le code doit s'exécuter dans JArchi sans dépendances Node.js"
+- **Serverless** : "Les fonctions Lambda doivent avoir un cold start <1s"
+- **Edge Computing** : "Le code doit être <1MB après minification"
+- **Browser** : "Aucune dépendance Node.js (fs, path, http)"
+
+### ❌ Contraintes mal définies
+
+- **Vague** : "Le code doit être performant" → Pas testable automatiquement
+- **Implicite** : "Utiliser les bonnes pratiques" → Trop générique
+- **Ambiguë** : "Éviter les dépendances lourdes" → Seuil non défini
+
+## Validation
+
+- Vérifier que chaque contrainte architecturale a un test automatisé
+- Vérifier que les tests sont exécutés systématiquement
+- Vérifier que les messages d'erreur sont clairs
+- Vérifier la cohérence entre spécifications et tests
+
+## État d'implémentation
+
+🚧 [Règle définie - 2025-11-09]
+
+- ✅ Règle documentée
+- ❌ À implémenter : Tests architecturaux pour hermes2022-concepts-site-extraction
+- ❌ À implémenter : Tests architecturaux pour archimate-model-loader (JArchi)
+- ❌ À implémenter : Intégration CI/CD
+
+## Références
+
+- Leçons apprises : `.cursor/rules/summary/2025-11-09-lecons-derive-jarchi-nodejs.md`
+- Spécification module : `hermes2022-concepts-site-extraction/.cursor/rules/specification-hermes2022-concepts-site-extraction.mdc`
+- Spécification projet : `.cursor/rules/specification-hermes2022-to-archimate.mdc`
