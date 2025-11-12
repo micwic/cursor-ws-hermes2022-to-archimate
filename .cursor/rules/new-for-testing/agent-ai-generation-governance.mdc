@@ -6,7 +6,7 @@ alwaysApply: true
 # agent-ai-generation-governance.mdc: Gouvernance de la génération de contenu par l'IA optimisée pour Cursor
 
 > Créé le : 2025-08-18
-> Dernière mise à jour : 2025-10-29
+> Dernière mise à jour : 2025-11-12
 
 ## Objectifs de la règle
 
@@ -14,6 +14,7 @@ alwaysApply: true
 - Garantir l'utilisation exclusive de références officielles dans tous les processus
 - Éviter les procédés manuels concurrents à la fonctionnalité Plan de Cursor
 - Maintenir la cohérence entre spécifications, plans et exécutions
+- Assurer que les commentaires dans le code décrivent uniquement le comportement effectif
 
 ## Problèmes résolus/à résoudre
 
@@ -21,6 +22,7 @@ alwaysApply: true
 - Utilisation de références non officielles dans l'élaboration des spécifications et plans
 - Manque d'intégration avec les mécanismes de validation et traçabilité de Cursor
 - Incohérences entre spécifications et exécutions réelles
+- Commentaires historiques et notes explicatives polluant le code source
 
 ## Comportement général attendu
 
@@ -30,6 +32,7 @@ alwaysApply: true
 - L'IA sauvegarde automatiquement le plan après exécution (build) dans .cursor/executed-plans à la racine du projet principal concerné (pas du workspace préfixé avec cursor-ws-*)
 - La traçabilité est assurée automatiquement par les mécanismes intégrés de Cursor
 - Les références officielles sont utilisées à tous les niveaux du processus
+- Les commentaires dans le code généré décrivent uniquement le comportement effectif, sans notes historiques
 
 ## Contexte d'application et généralités
 
@@ -108,3 +111,122 @@ Pendant génération du plan :
 - **Références non fiables** : Utiliser des suppositions ou de la documentation non officielle
 - **Validation implicite** : Procéder sans accord utilisateur explicite via l'interface de Cursor
 - **Plan non sauvegardé** : Ne pas sauvegarder le plan après exécution complète → L'IA doit systématiquement créer le fichier dans `.cursor/executed-plans/`
+
+### Commentaires dans le code généré
+
+#### Règles obligatoires pour les commentaires dans le code
+
+- **DÉCRIRE COMPORTEMENT EFFECTIF** : Les commentaires dans le code doivent décrire uniquement ce que le code FAIT actuellement
+- **PAS D'HISTORIQUE** : Ne jamais inclure de notes historiques, de justifications de suppressions ou d'explications sur ce que le code ne fait pas
+- **PAS DE NOTES "À FAIRE"** : Les notes "Note:", "TODO:", "FIXME:" ne doivent pas être utilisées pour documenter l'historique
+- **DOCUMENTATION EXTERNE** : Toute information historique, justification de décisions ou notes explicatives doit être documentée dans :
+  - `.cursor/executed-plans/` pour l'historique des changements et décisions de session
+  - `.cursor/rules/summary/` pour la capitalisation des leçons apprises
+  - Les règles de gouvernance (`@*.mdc`) pour les principes généraux établis
+
+#### Justification
+
+- **Lisibilité du code** : Code plus clair sans pollution de commentaires historiques
+- **Maintenance simplifiée** : Un seul endroit pour trouver l'historique (executed-plans, summary)
+- **Traçabilité centralisée** : Documentation historique structurée et facilement consultable
+- **Focus sur le comportement** : Les développeurs comprennent ce que le code fait, pas ce qu'il faisait
+
+#### Patterns validés
+
+**Commentaire correct (décrit le comportement)** :
+
+```javascript
+// Validation : htmlContents ne doit pas être vide
+if (block.htmlContents.length === 0) {
+  throw new Error('block.htmlContents is empty. No HTML content found for this block. Script stopped.');
+}
+```
+
+**Commentaire correct (docstring de fonction)** :
+
+```javascript
+/**
+ * Construit le prompt d'extraction pour un bloc spécifique
+ * @param {{jsonPointer: string, instructions: Array<string>, htmlContents: Array<{url: string, content: string}>}} block - Bloc avec JSON Pointer, instructions et contenus HTML
+ * @returns {string} - Prompt Markdown pour ce bloc
+ */
+function buildBlockPrompt(block) {
+  // ...
+}
+```
+
+#### Anti-Patterns à éviter
+
+**Commentaire historique (à ne PAS faire)** :
+
+```javascript
+// ❌ MAUVAIS : Note historique
+// Note: Pas de validation structure bloc car block est construit localement 
+// dans collectHtmlSourcesAndInstructions avec structure garantie
+// (voir @code-modularity-governance section "Validations défensives appropriées")
+if (block.htmlContents.length === 0) {
+  throw new Error('...');
+}
+```
+
+**Commentaire sur suppression (à ne PAS faire)** :
+
+```javascript
+// ❌ MAUVAIS : Explication de ce qui a été supprimé
+// Note: La validation "target null" a été supprimée car target est garanti 
+// non-null par construction locale
+function mergeJsonAtPath(target, path, value) {
+  // ...
+}
+```
+
+**Commentaire TODO historique (à ne PAS faire)** :
+
+```javascript
+// ❌ MAUVAIS : Note sur ce qui n'est pas implémenté
+// TODO: Ajouter validation supplémentaire (voir issue #123)
+// Note: Cette validation a été retirée le 2025-11-12
+function processData(data) {
+  // ...
+}
+```
+
+#### Localisation de la documentation historique
+
+**À mettre dans `.cursor/executed-plans/YYYY-MM-DD-description.md`** :
+
+- Décisions de refactoring (ex: conversion en nested functions)
+- Suppressions de code mort (ex: validations défensives inutiles)
+- Changements architecturaux (ex: séparation modules API/client)
+- Migrations de tests
+- Justifications des choix techniques
+
+**À mettre dans `.cursor/rules/summary/YYYY-MM-DD-description.md`** :
+
+- Leçons apprises d'erreurs identifiées
+- Patterns découverts et validés
+- Anti-patterns identifiés
+- Évolutions des règles de gouvernance
+
+**À mettre dans les règles de gouvernance (`@*.mdc`)** :
+
+- Principes généraux établis
+- Patterns validés réutilisables
+- Anti-patterns à éviter
+- État d'implémentation des principes
+
+#### Validation des commentaires dans le code
+
+- Vérifier que les commentaires décrivent uniquement le comportement actuel du code
+- Vérifier l'absence de notes historiques (Note:, supprimé, retiré, etc.)
+- Vérifier que les informations historiques sont documentées dans executed-plans ou summary
+- Vérifier que les principes généraux sont documentés dans les règles de gouvernance
+
+#### État d'implémentation
+
+✅ [Règle établie - 2025-11-12]
+
+✅ [Application complète sur nuextract-client.js - 2025-11-12]
+
+- 6 commentaires historiques supprimés du code source
+- Documentation complète dans `.cursor/executed-plans/2025-11-12-refactoring-nested-functions-validations-defensives.md`

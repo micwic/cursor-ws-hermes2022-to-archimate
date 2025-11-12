@@ -6,7 +6,7 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : 2025-11-03
+> Dernière mise à jour : 2025-11-12
 
 ## Objectifs de la règle
 
@@ -38,8 +38,8 @@ alwaysApply: true
 ### Spécifications générales (fichiers `.mdc` de règles/spécifications)
 
 - **Contenu** : Décisions architecturales et techniques justifiées, patterns validés avec exemples minimalistes, anti-patterns avec solutions recommandées, état d'implémentation
-- **Objectif** : Documenter les choix de conception et les principes directeurs
-- **Niveau de détail** : Succinct, éviter la redondance avec les fichiers BDD
+- **Objectif** : Documenter les exigences à supporter (Règles de gestion, principes et contraintes à respecter), les choix de conception et les principes directeurs qui en découlent dans le contexte
+- **Niveau de détail** : Suffisant pour exprimer le besoin à couvrir et le cadre à respecter, éviter la redondance avec les fichiers BDD
 
 ### Spécifications détaillées (fichiers BDD)
 
@@ -67,7 +67,7 @@ alwaysApply: true
 #### Comportements interdits/proscrits/à éviter
 
 - **REDONDANCE** : Ne pas dupliquer les spécifications générales
-- **INCOHÉRENCE** : Ne pas créer de spécifications contradictoires avec les générales
+- **INCOHÉRENCE** : Ne pas créer de spécifications contradictoires avec les spécifications générales
 - **SURSPÉCIFICATION** : Éviter le détail excessif non nécessaire
 
 #### Validation
@@ -78,18 +78,17 @@ alwaysApply: true
 
 ### Cycle Rouge → Vert → Refactor (TDD/BDD)
 
-#### Principe
+#### Principe pour le cycle BDD
 
-- **Rouge**: écrire/scénariser un comportement en Gherkin (`.feature`) qui échoue; ajouter le minimum de steps pour reproduire l’échec.
-- **Vert**: implémenter le minimum dans les steps pour faire passer le scénario; viser le plus simple qui fonctionne.
-- **Refactor**: factoriser les steps, mutualiser dans `__tests__/shared/`, améliorer la lisibilité sans changer le comportement.
+- **Rouge**: écrire/scénariser un comportement attendu en Gherkin (`.feature`) qui vérifie le résultat attendu et qui échouera nécessairement aux premières tentatives d'exécution; ajouter le minimum de steps (`.steps.ts`) jusqu'à reproduire l’échec à l'exécution du test mais à permettre l'exécution du test.
+- **Vert**: implémenter le minimum dans le code et les steps pour faire passer le scénario avec le résultat attendu; viser le plus simple qui fonctionne.
+- **Refactor**: améliorer et étendre le code, factoriser les steps, mutualiser dans `__tests__/shared/`, améliorer la lisibilité sans changer le résultat.
 
 #### Critères de validation
 
 - **Exécution**: les scénarios `.feature` ciblés passent via Jest-Cucumber (config partagée).
 - **Structure**: features en `__tests__/integration/` ou `__tests__/e2e/`, steps associées, steps partagées en `__tests__/shared/`.
 - **Langue**: `# language: fr` en tête des fichiers `.feature`.
-- **Traçabilité**: messages de commit alignés: `RED`, `GREEN`, `REFACTOR`.
 
 #### Anti-patterns (à éviter)
 
@@ -105,6 +104,13 @@ alwaysApply: true
 - Voir `@bdd-cucumber-vscode-plugin-governance.mdc` (configuration du plugin VSCode).
 
 ### Gestion des messages d'erreur dans les step definitions
+
+#### Principes pour les messages d'erreur
+
+- L'implémentation de la gestion attendue des erreurs dans le code est testée dans des tests unitaires dédiés
+- Le nom des fichiers de tests reprend le nom du fichier qui contient le code suivi de `-error-handling`
+  - Exemple : `nuextract-client.js` → `nuextract-client-error-handling.feature` et `.steps.ts`
+- Les fichiers de tests représentent une source d'information pour l'élaboration du manuel d'erreur et le contrôle de qualité
 
 #### Règles obligatoires à appliquer pour les messages d'erreur
 
@@ -162,277 +168,345 @@ then(/^une erreur contenant "(.*)" est générée$/, (expectedMessage) => {
 
 ✅ [Harmonisé dans tests intégration mockés - 2025-10-30]
 
-### Structure des tests d'intégration
+### Organisation des tests BDD
 
-#### Règles obligatoires à appliquer pour la structure des tests
+#### Principes généraux d'organisation
 
-- **SÉPARATION RÉEL/MOCKÉ** : Organiser les tests selon leur type (réel vs mocké)
-- **RÉPERTOIRES SPÉCIALISÉS** : Utiliser des répertoires distincts pour les tests avec appels API réels et les tests avec mocks
-- **SUFFIXE MOCKÉ** : Utiliser le suffixe `-mocked` pour les fichiers de tests mockés
-- **PAIRES FICHIERS** : Placer les fichiers `.feature` et `.steps.ts` côte à côte dans le même répertoire
+- **SÉPARATION PAR PORTÉE** : Distinguer tests unitaires (unité isolée) et tests d'intégration (interaction entre composants/systèmes)
+- **COHÉRENCE D'ORGANISATION** : Maintenir une structure claire et prévisible pour faciliter la navigation
+- **PAIRES FICHIERS** : Placer les fichiers `.feature` (Gherkin) et `.steps.ts` (implémentation) côte à côte dans le même répertoire
+- **NOMMAGE EXPLICITE** : Utiliser des noms de fichiers et répertoires qui décrivent clairement la portée et l'objectif des tests
 
-#### Patterns validés
+#### Tests unitaires vs Tests d'intégration
 
-**Structure standard pour tests d'intégration :**
+**Tests unitaires** :
 
-```text
-__tests__/
-  integration/
-    with-external-system/          # Tests avec appels API réels
-      template-generation.feature
-      template-generation.steps.ts
-    with-external-system-mocked/   # Tests avec système externe mocké
-      template-generation-mocked.feature
-      template-generation-mocked.steps.ts
+- **Portée** : Testent une unité de code isolée (fonction, classe, module)
+- **Objectif** : Valider le comportement d'une unité indépendamment du reste du système
+- **Mocks** : Peuvent utiliser des mocks pour isoler l'unité testée (selon les besoins)
+- **Rapidité** : Généralement rapides (< 5-10s), pas de dépendances externes lourdes
+
+**Tests d'intégration** :
+
+- **Portée** : Testent l'interaction entre composants/systèmes
+- **Objectif** : Valider que les composants fonctionnent correctement ensemble
+- **Mocks** : Peuvent aussi utiliser des mocks selon les contraintes (coût, disponibilité, déterminisme)
+- **Durée** : Peuvent être plus lents si interactions avec systèmes externes réels
+
+**Note importante** : La présence ou l'absence de mocks ne définit PAS le type de test. Ce qui distingue unit/integration est la **portée du test** (unité isolée vs interaction entre composants).
+
+#### Usage des mocks
+
+Les mocks peuvent être utilisés dans **les deux types de tests** selon les besoins :
+
+- **Tests unitaires mockés** : Pour isoler l'unité testée de ses dépendances
+- **Tests d'intégration mockés** : Pour simuler des systèmes externes (coût, quota, disponibilité, déterminisme)
+- **Tests d'intégration réels** : Pour valider avec les systèmes réels (validation end-to-end)
+
+**Critères de choix** : Utiliser des mocks selon les contraintes du projet (coût API, quotas, disponibilité réseau, déterminisme des tests, vitesse d'exécution).
+
+#### Timeouts
+
+- **TIMEOUT OBLIGATOIRE** : Tous les tests doivent définir un timeout explicite pour éviter les blocages
+- **ADAPTATION AU CONTEXTE** : Le timeout doit être adapté à la nature du test (rapide pour unitaires/mockés, plus long pour intégration avec systèmes réels)
+- **COHÉRENCE** : Maintenir des timeouts cohérents pour des tests de même nature dans le projet
+
+#### Bonnes pratiques BDD générales
+
+- **Fichiers côte à côte** : `.feature` (Gherkin) et `.steps.ts` (implémentation) dans le même répertoire
+- **Assertions flexibles** : Préférer `toContain()` pour fragments de messages plutôt que contenu exact complet
+- **Hooks d'isolation** : Utiliser `beforeEach`/`afterEach` pour restaurer l'état et éviter effets de bord entre scénarios
+- **Nommage descriptif** : Noms de scénarios clairs décrivant le comportement testé (pas l'implémentation)
+- **Steps réutilisables** : Factoriser les steps communs pour éviter duplication
+
+#### Anti-Patterns généraux à éviter
+
+- **TIMEOUT ABSENT** : Ne jamais omettre le timeout → Risque de tests bloqués indéfiniment
+- **NOMMAGE TECHNIQUE** : Éviter noms de tests basés sur l'implémentation → Privilégier comportement métier
+- **DUPLICATION STEPS** : Éviter duplication de steps identiques → Factoriser dans steps réutilisables
+- **ASSERTIONS FRAGILES** : Éviter assertions trop strictes (contenu exact complet) → Valider fragments clés
+
+#### Références pour organisation BDD
+
+- Voir spécifications du projet pour détails d'organisation spécifiques (structure répertoires, nommage, timeouts précis)
+- Voir `@jest-cucumber-governance.mdc` pour aspects pratiques Jest-Cucumber
+- Voir `@test-mock-governance.mdc` pour isolation des mocks
+- Voir `@code-modularity-governance.mdc` pour principes SOLID
+
+### Profondeur des assertions BDD
+
+#### Règles obligatoires pour profondeur des assertions
+
+- **VALIDATION TECHNIQUE** : Vérifier que l'opération s'est exécutée sans erreur (status, code retour, absence d'exception)
+- **VALIDATION MÉTIER** : Pour les opérations avec effets de bord, valider le résultat réel attendu
+- **INDÉPENDANCE VALIDATION** : Pour valider des effets de bord, interroger directement le réceptacle de données (API, fichier, base de données) plutôt que se fier uniquement au retour de la fonction
+- **PROFONDEUR APPROPRIÉE** : Adapter la profondeur des assertions à la complexité et criticité de l'opération
+
+#### Principes généraux
+
+**Validation technique** :
+
+- Confirme que l'exécution s'est déroulée sans erreur
+- Vérifie les codes retour, status, présence de résultats attendus
+- Rapide et déterministe
+
+**Validation métier** :
+
+- Confirme que l'intention métier a été atteinte
+- Pour opérations avec effets de bord : interroge le réceptacle de données
+- Peut nécessiter des appels supplémentaires (lecture API, fichier, base de données)
+
+#### Pattern général : Validation en deux temps
+
+```gherkin
+Alors l'opération s'exécute avec succès          # Validation technique
+Et le résultat attendu est présent dans le système   # Validation métier
 ```
 
-#### Portée des mocks (règle)
+#### Anti-Patterns pour profondeur des assertions
 
-- **Mocker uniquement les frontières** : Mocker uniquement les composants aux frontières du projet (systèmes externes: APIs, réseau, I/O distants)
-- **Ne pas mocker les modules internes** : Ne pas mocker les modules internes entre eux (cela relève de la conception interne et doit être validé par intégration)
-- **Exception pour tests d'erreur** : Tests de gestion d'erreurs (error-handling) peuvent mocker de manière ciblée pour valider les chemins d'erreurs et les messages, sans dériver vers des tests d'implémentation
+- **Validation superficielle** : Éviter de valider uniquement `expect(result).toBeDefined()` → **Solution** : Valider le contenu réel pertinent
+- **Validation uniquement technique** : Pour opérations avec effets de bord, ne pas se fier uniquement au status retourné → **Solution** : Interroger le réceptacle de données
+- **Redondance excessive** : Éviter de re-valider ce qui est déjà validé ailleurs → **Solution** : Chaque assertion a un objectif distinct
 
-#### Timeouts selon le type de test
+#### Références pour profondeur des assertions
 
-**Tests réels (`with-external-system/`) :**
-
-- Mode async : 120s (timeout dans le test : `120000`)
-- Mode sync : 45s (timeout dans le test : `45000`)
-
-**Tests mockés (`with-external-system-mocked/`) :**
-
-- Tous les tests : 5s (timeout dans le test : `5000`)
-
-#### Exemples
-
-**Test réel avec timeout async :**
-
-```typescript
-test('Génération de template NuExtract avec infer-template-async', ({ given, when, then }) => {
-  // ... steps ...
-}, 120000); // 120s pour mode async
-```
-
-**Test mocké avec timeout court :**
-
-```typescript
-test('Erreur HTTP 500 en mode async', ({ given, when, then }) => {
-  // ... steps ...
-}, 5000); // 5s pour test mocké
-```
-
-#### Anti-Patterns à éviter
-
-- **TIMEOUT ABSENT** : Éviter les tests sans timeout explicite → **Solution** : Toujours définir un timeout → **Règle à adopter** : Timeout obligatoire selon le type
-- **TIMEOUT INCONFORME** : Éviter les timeouts non conformes à la gouvernance → **Solution** : Respecter async 120s/sync 45s pour réels, < 5s pour mockés → **Règle à adopter** : Timeouts standardisés
-
-#### Bonnes pratiques BDD
-
-- **Fichiers côte à côte** : `.feature` (Gherkin, FR) et `.steps.ts` (jest-cucumber) côte à côte dans le même répertoire
-- **Assertions flexibles** : Utiliser `toContain()` pour les fragments de messages plutôt que le contenu exact, conformément à la gouvernance de gestion d'erreurs
-- **Hooks d'isolation** : Utiliser `beforeEach`/`afterEach` pour restaurer l'état et éviter les effets de bord entre scénarios
-
-#### Nommage et lisibilité
-
-- **Suffixe mocké** : Les fichiers mockés portent systématiquement le suffixe `-mocked`
-- **Noms explicites** : Les répertoires `with-external-system/` et `with-external-system-mocked/` rendent explicite le périmètre (réel vs mocké)
-
-#### Critères de validation pour tests d'intégration
-
-- **Tests réels** : Les scénarios réels doivent pouvoir s'exécuter sans modification des steps en présence d'une configuration valide (clé API, endpoints accessibles)
-- **Tests mockés** : Les scénarios mockés doivent passer sans dépendance réseau et couvrir les erreurs clés (HTTP/timeout/JSON/propagation) ainsi que l'orchestration côté client
-
-#### Références pratiques
-
-- Voir `@jest-cucumber-governance.mdc` (workspace) pour les aspects pratiques : commandes d'exécution (`--testPathPatterns`), timeouts, structure détaillée
-- Voir `@test-mock-governance.mdc` pour les détails sur l'isolation des mocks
-
-### Distinction validation technique vs validation métier
-
-#### Règles obligatoires à appliquer pour les tests d'intégration réels
-
-- **DISTINCTION CLAIRE** : Distinguer la validation d'exécution (status retourné) de la validation métier (résultat réel dans le réceptacle de données)
-- **VALIDATION TECHNIQUE** : Vérifier que l'exécution s'est bien déroulée via le status retourné (ex: `result.updated === true`, `result.id` défini)
-- **VALIDATION MÉTIER INDÉPENDANTE** : Pour les opérations modifiant des données, l'intention métier est vérifiée en contrôlant les résultats attendus de manière indépendante à la fonction qui a provoqué le changement, en interrogeant le réceptacle de la donnée (système externe via API, fichier, base de données, etc.)
-- **RÉCEPTACLES DE DONNÉES** : La validation métier interroge le réceptacle approprié selon le type d'opération :
-  - **Système externe** : Appels API dédiés (ex: `getNuExtractProject()`) pour récupérer l'état réel
-  - **Fichiers** : Lecture directe du fichier créé/modifié pour vérifier le contenu
-  - **Bases de données** : Requêtes SQL pour vérifier les données enregistrées
-  - **Autres réceptacles** : Méthode appropriée pour interroger l'état réel des données
-
-#### Patterns validés
-
-**Validation technique (Then)** :
-
-```typescript
-then('le template est mis à jour avec succès', () => {
-  // Validation technique : vérifier que l'exécution s'est bien déroulée
-  expect(updateResult?.updated).toBe(true);
-});
-```
-
-**Validation métier (And) - Système externe via API** :
-
-```typescript
-and('le projet contient le nouveau template', async () => {
-  // Validation métier : récupérer le projet depuis le système externe de manière indépendante
-  // et comparer le template (interroger le réceptacle de données)
-  const project = await getNuExtractProject(
-    config?.nuextract?.baseUrl || 'nuextract.ai',
-    config?.nuextract?.port || 443,
-    config?.nuextract?.projectsPath || '/api/projects',
-    apiKey,
-    updateResult.id
-  );
-  
-  expect(project).toBeDefined();
-  expect(project.template).toBeDefined();
-  expect(project.template.type).toBe('schema');
-  expect(project.template.schema).toBeDefined();
-  
-  // Comparaison profonde du template : structure et contenu
-  expect(JSON.stringify(project.template.schema)).toBe(JSON.stringify(newTemplate));
-});
-```
-
-**Validation métier (And) - Fichier** :
-
-```typescript
-and('le template est créé avec succès dans le répertoire de sortie', () => {
-  // Validation métier : lire le fichier créé de manière indépendante pour vérifier le contenu
-  const templatePath = resolveFromRepoRoot(path.join(templateDirConfig, 'nuextract-template.json'));
-  expect(fs.existsSync(templatePath)).toBe(true);
-  const templateContent = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
-  // Comparaison profonde : le template sauvegardé correspond au template retourné
-  expect(template).toEqual(templateContent);
-});
-```
-
-**Validation métier (And) - Base de données** :
-
-```typescript
-and('les données sont enregistrées dans la base de données', async () => {
-  // Validation métier : interroger la base de données de manière indépendante pour vérifier les données
-  const dbResult = await db.query('SELECT * FROM projects WHERE id = ?', [projectResult.id]);
-  expect(dbResult).toBeDefined();
-  expect(dbResult.template).toBeDefined();
-  // Comparaison profonde des données enregistrées
-  expect(JSON.stringify(dbResult.template)).toBe(JSON.stringify(expectedTemplate));
-});
-```
-
-#### Justification
-
-- **Validation technique** : Confirme que l'exécution s'est déroulée sans erreur (infrastructure OK)
-- **Validation métier indépendante** : Confirme que le résultat métier attendu a été effectivement atteint dans le réceptacle de données (intention métier respectée), indépendamment de la fonction qui a provoqué le changement
-- **Robustesse** : La validation métier garantit que le changement a été appliqué réellement dans le réceptacle de données (système externe, fichier, base de données, etc.), pas seulement que la fonction a retourné un status de succès
-- **Indépendance** : En interrogeant directement le réceptacle de données, on évite de dépendre de l'implémentation de la fonction qui a effectué la modification
-
-#### Anti-Patterns à éviter
-
-- **Validation uniquement technique** : Éviter de valider uniquement le status retourné pour les opérations modifiant des données → **Solution** : Ajouter validation métier en interrogeant le réceptacle de données approprié (API, fichier, base de données, etc.) → **Règle à adopter** : Distinction claire technique vs métier
-- **Dépendance à la fonction** : Éviter de valider le résultat métier en se fiant uniquement à la valeur retournée par la fonction qui a provoqué le changement → **Solution** : Interroger directement le réceptacle de données pour vérifier l'état réel → **Règle à adopter** : Validation métier indépendante de l'implémentation
-- **Redondance dans validation métier** : Éviter de re-valider ce qui est déjà validé par la validation technique → **Solution** : Validation métier se concentre sur le résultat réel dans le réceptacle, pas sur le status d'exécution → **Règle à adopter** : Séparation des responsabilités
-
-#### État d'implémentation
-
-✅ [Appliqué dans tests d'intégration - 2025-11-03]
+- Voir spécifications du projet pour exemples concrets de validation métier
 
 ### Principe de non-redondance dans les assertions
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires pour non-redondance
 
+- **DRY (Don't Repeat Yourself)** : Éviter de dupliquer les validations entre différentes parties du test
 - **ÉVITER REDONDANCE GIVEN/THEN** : Ne pas valider dans `Then` ce qui est déjà validé dans `Given`
-- **DÉLÉGUER AUX FONCTIONS** : Si une fonction interne valide déjà quelque chose, ne pas re-valider dans les tests d'intégration
-- **VÉRIFICATIONS MINIMALES** : Limiter les vérifications dans `Given` et `And` aux vérifications minimales nécessaires pour le contexte du test
+- **DÉLÉGUER AUX FONCTIONS** : Faire confiance aux validations déjà effectuées par les fonctions du système sous test
+- **VÉRIFICATIONS MINIMALES** : Limiter les vérifications dans `Given` et `And` au minimum nécessaire pour établir le contexte
 
-#### Patterns validés
+#### Justification de non-redondance
 
-**Vérification minimale dans Given** :
+- **Maintenance simplifiée** : Un changement dans une validation interne ne nécessite pas de modification multiple des tests
+- **Focus sur l'intention** : Les tests se concentrent sur l'intention métier, pas sur la répétition de validations techniques
+- **Lisibilité** : Tests plus concis et plus faciles à comprendre
 
-```typescript
-given('des paramètres de configuration NuExtract pour la génération du template', async () => {
-  config = await loadGlobalConfig();
-  // Forcer le mode async pour ce scénario réel
-  config.nuextract.templateMode = 'async';
-  // Vérification minimale : les validations détaillées sont effectuées par loadGlobalConfig()
-  expect(config?.nuextract?.templateMode).toBe('async');
-});
-```
+#### Anti-Patterns pour non-redondance
 
-**Éviter redondance avec fonctions internes** :
+- **Redondance Given/Then** : Valider la même chose dans `Given` et `Then` → **Solution** : Chaque assertion a un objectif distinct
+- **Re-validation de pré-conditions** : Re-valider ce que les fonctions d'initialisation ont déjà validé → **Solution** : Faire confiance aux fonctions internes
 
-```typescript
-and('des instructions de transformation depuis config', () => {
-  // Validation redondante supprimée : loadInstructions() valide déjà la présence et le type array
-  // Si les instructions sont absentes ou invalides, loadInstructions() lèvera une erreur
-});
-```
+### Tests des fonctions nested
 
-#### Justification
+#### Principe pour les tests de fonctions nested
 
-- **DRY (Don't Repeat Yourself)** : Éviter de dupliquer les validations déjà effectuées par les fonctions internes
-- **Maintenance simplifiée** : Un changement dans la validation interne ne nécessite pas de modification des tests
-- **Focus sur l'intention** : Les tests d'intégration se concentrent sur l'intention métier, pas sur les détails de validation déjà gérés par les fonctions internes
+- **Pas de tests directs** : Les fonctions nested ne doivent pas avoir de tests unitaires directs
+- **Tests via parent** : Le comportement des fonctions nested est testé via leur fonction parent
+- **Pas d'exports _testOnly_** : Les fonctions nested n'ont jamais d'export (ni normal ni _testOnly_)
 
-#### Anti-Patterns à éviter
+#### Justification pour tests via parent
 
-- **Redondance Given/Then** : Éviter de valider `expect(template).toBeDefined()` dans `Then` si `template` a déjà été validé dans `Given` → **Solution** : Supprimer validation redondante → **Règle à adopter** : Chaque assertion a un objectif distinct
-- **Re-validation interne** : Éviter de re-valider ce qui est déjà validé par `loadGlobalConfig()`, `loadApiKey()`, `loadInstructions()`, etc. → **Solution** : Faire confiance aux fonctions internes et leurs validations → **Règle à adopter** : Vérifications minimales dans tests d'intégration
+- **Encapsulation préservée** : Les fonctions nested sont des détails d'implémentation privés
+- **Tests comportement complet** : Tester le parent valide automatiquement le comportement des helpers nested
+- **Maintenance simplifiée** : Refactoring des nested sans impact sur les tests
+- **Surface de test réduite** : Moins de tests à maintenir sans perte de couverture
 
-#### État d'implémentation
+#### Patterns validés pour tests de fonctions nested
 
-✅ [Appliqué dans tests d'intégration - 2025-11-03]
+##### Exemple 1 : Tests de fonctionnement (cas nominal)
 
-### Profondeur des assertions Then
+**Code source** :
 
-#### Règles obligatoires à appliquer
-
-- **INTENTION MÉTIER** : Les assertions `Then` doivent valider l'intention métier, pas seulement la présence de variables
-- **RÉSULTAT RÉEL** : Pour les opérations modifiant des données, valider le résultat réel obtenu depuis le réceptacle de données (système externe, fichier, base de données, etc.)
-- **VALIDATION INDÉPENDANTE** : Interroger directement le réceptacle de données de manière indépendante à la fonction qui a provoqué le changement
-- **PROFONDEUR APPROPRIÉE** : La profondeur des assertions doit être proportionnelle à la complexité de l'opération testée
-
-#### Patterns validés
-
-**Assertion Then profonde (validation métier)** :
-
-```typescript
-then('le projet contient le template fourni', async () => {
-  // Validation métier : récupérer le projet depuis le système externe et vérifier le template
-  const project = await getNuExtractProject(
-    config?.nuextract?.baseUrl || 'nuextract.ai',
-    config?.nuextract?.port || 443,
-    config?.nuextract?.projectsPath || '/api/projects',
-    apiKey,
-    projectResult.id
-  );
+```javascript
+async function processData(data, config) {
+  // Fonction helper nested pour transformer les données
+  function transformData(data) {
+    return {
+      id: data.id,
+      name: data.name.toUpperCase(),
+      timestamp: new Date().toISOString()
+    };
+  }
   
-  expect(project).toBeDefined();
-  expect(project.template).toBeDefined();
-  expect(project.template.type).toBe('schema');
-  expect(project.template.schema).toBeDefined();
+  // Fonction helper nested pour enrichir les données
+  function enrichData(transformed, config) {
+    return {
+      ...transformed,
+      processed: true,
+      version: config.version || '1.0'
+    };
+  }
   
-  // Comparaison profonde du template : structure et contenu
-  expect(JSON.stringify(project.template.schema)).toBe(JSON.stringify(template));
+  // Utilisation des helpers nested
+  const transformed = transformData(data);
+  const enriched = enrichData(transformed, config);
+  
+  return enriched;
+}
+```
+
+**Test BDD via parent** (`processData-success.feature`) :
+
+```gherkin
+Fonctionnalité: Traitement de données avec helpers nested
+
+Scénario: Transformation et enrichissement de données valides
+  Etant donné des données avec id "test-123" et name "alice"
+  Et une configuration avec version "2.0"
+  Quand on appelle processData avec ces données
+  Alors le résultat contient l'id "test-123"
+  Et le name est en majuscules "ALICE"
+  Et processed est true
+  Et version est "2.0"
+  Et timestamp est défini
+```
+
+**Step definitions** (`processData-success.steps.ts`) :
+
+```typescript
+test('Transformation et enrichissement de données valides', ({ given, when, then, and }) => {
+  let data, config, result;
+  
+  given(/^des données avec id "(.*)" et name "(.*)"$/, (id, name) => {
+    data = { id, name };
+  });
+  
+  and(/^une configuration avec version "(.*)"$/, (version) => {
+    config = { version };
+  });
+  
+  when('on appelle processData avec ces données', async () => {
+    result = await processData(data, config);
+  });
+  
+  then(/^le résultat contient l'id "(.*)"$/, (expectedId) => {
+    expect(result.id).toBe(expectedId);
+  });
+  
+  and(/^le name est en majuscules "(.*)"$/, (expectedName) => {
+    expect(result.name).toBe(expectedName);
+  });
+  
+  and('processed est true', () => {
+    expect(result.processed).toBe(true);
+  });
+  
+  and(/^version est "(.*)"$/, (expectedVersion) => {
+    expect(result.version).toBe(expectedVersion);
+  });
+  
+  and('timestamp est défini', () => {
+    expect(result.timestamp).toBeDefined();
+  });
 });
 ```
 
-#### Justification
+**Observation** : Les tests du parent `processData()` valident automatiquement le comportement des helpers nested `transformData()` et `enrichData()` sans avoir besoin de tests directs.
 
-- **Intention métier** : Les tests BDD valident l'intention métier, pas seulement l'exécution technique
-- **Robustesse** : La validation du résultat réel garantit que l'opération a effectivement atteint son objectif métier
-- **Cohérence** : Les assertions profondes assurent la cohérence entre l'intention métier et le résultat effectif
+##### Exemple 2 : Tests de gestion d'erreur (fichier séparé)
 
-#### Anti-Patterns à éviter
+**Code source** (avec validation nested) :
 
-- **Assertion superficielle** : Éviter `expect(template).toBeDefined()` dans `Then` si `template` est déjà validé dans `Given` → **Solution** : Supprimer assertion redondante ou la remplacer par validation métier → **Règle à adopter** : Chaque assertion ajoute de la valeur
-- **Validation uniquement technique** : Éviter de valider uniquement le status retourné sans vérifier le résultat réel dans le réceptacle → **Solution** : Ajouter validation métier en interrogeant le réceptacle approprié (API, fichier, base de données, etc.) → **Règle à adopter** : Profondeur appropriée selon le type d'opération
-- **Dépendance à l'implémentation** : Éviter de valider le résultat en se fiant uniquement à la valeur retournée par la fonction → **Solution** : Interroger directement le réceptacle de données pour obtenir l'état réel → **Règle à adopter** : Validation métier indépendante
+```javascript
+async function processData(data, config) {
+  // Fonction helper nested pour valider les données
+  function validateData(data) {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid data: must be a non-null object. Script stopped.');
+    }
+    if (!data.id) {
+      throw new Error('Invalid data: id is required. Script stopped.');
+    }
+    if (!data.name || typeof data.name !== 'string') {
+      throw new Error('Invalid data: name is required and must be a string. Script stopped.');
+    }
+    return true;
+  }
+  
+  // Validation via helper nested
+  validateData(data);
+  
+  // Logique métier (transformData, enrichData...)
+  return processedResult;
+}
+```
 
-#### État d'implémentation
+**Test BDD via parent** (`processData-error-handling.feature`) :
 
-✅ [Appliqué dans tests d'intégration - 2025-11-03]
+```gherkin
+Fonctionnalité: Gestion des erreurs processData
+
+Scénario: Erreur données null
+  Etant donné des données null
+  Quand on tente d'appeler processData
+  Alors une erreur contenant "Invalid data: must be a non-null object" est générée
+
+Scénario: Erreur id manquant
+  Etant donné des données sans id
+  Quand on tente d'appeler processData
+  Alors une erreur contenant "Invalid data: id is required" est générée
+
+Scénario: Erreur name invalide
+  Etant donné des données avec name de type number
+  Quand on tente d'appeler processData
+  Alors une erreur contenant "name is required and must be a string" est générée
+```
+
+**Step definitions** (`processData-error-handling.steps.ts`) :
+
+```typescript
+test('Erreur données null', ({ given, when, then }) => {
+  let error;
+  
+  given('des données null', () => {
+    // Pas de setup nécessaire
+  });
+  
+  when('on tente d\'appeler processData', async () => {
+    try {
+      await processData(null, {});
+    } catch (e) {
+      error = e;
+    }
+  });
+  
+  then(/^une erreur contenant "(.*)" est générée$/, (expectedMessage) => {
+    expect(error).toBeDefined();
+    expect(error.message).toContain(expectedMessage);
+  });
+});
+
+test('Erreur id manquant', ({ given, when, then }) => {
+  let error;
+  
+  given('des données sans id', () => {
+    // Pas de setup nécessaire
+  });
+  
+  when('on tente d\'appeler processData', async () => {
+    try {
+      await processData({ name: 'test' }, {});
+    } catch (e) {
+      error = e;
+    }
+  });
+  
+  then(/^une erreur contenant "(.*)" est générée$/, (expectedMessage) => {
+    expect(error).toBeDefined();
+    expect(error.message).toContain(expectedMessage);
+  });
+});
+```
+
+**Observation** : Les tests de gestion d'erreur du parent `processData()` valident automatiquement le comportement du helper nested `validateData()` sans avoir besoin de tests directs. Les tests d'erreur sont dans un fichier séparé `-error-handling` selon la convention établie.
+
+#### Anti-Patterns pour tests de fonctions nested
+
+- **Tests directs du nested** : Éviter de créer des tests unitaires pour les fonctions nested → **Solution** : Tester via parent → **Règle** : Pas d'export _testOnly_ pour nested
+- **Duplication de tests** : Éviter de tester les mêmes cas via parent ET via nested → **Solution** : Uniquement via parent → **Règle** : Supprimer tests obsolètes après conversion en nested
+- **Export _testOnly_ du nested** : Éviter d'exposer les nested pour tests → **Solution** : Encapsulation stricte → **Règle** : Nested = détail d'implémentation privé
+
+#### Références pour tests de fonctions nested
+
+- Voir `@code-modularity-governance.mdc` pour critères de conversion en nested
+- Voir spécifications du projet pour exemples concrets d'implémentation
 
 ### Évolution à prévoir
 

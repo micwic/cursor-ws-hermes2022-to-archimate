@@ -6,7 +6,7 @@ alwaysApply: true
 # code-modularity-governance.mdc : Gouvernance de la modularité du code
 
 > Créé le : 2025-10-26
-> Dernière mise à jour : 2025-10-26
+> Dernière mise à jour : 2025-11-11
 
 ## Objectifs de la règle
 
@@ -63,7 +63,7 @@ alwaysApply: true
 
 ### Modularité du code
 
-#### Règles obligatoires à appliquer
+#### Règles obligatoires pour modularité du code
 
 - **MODULE PAR RESPONSABILITÉ** : Créer un module séparé pour chaque responsabilité distincte
 - **SINGLE RESPONSIBILITY** : Un module ne doit avoir qu'une seule raison de changer
@@ -77,7 +77,7 @@ alwaysApply: true
 
 **Séparation par couches** :
 
-```
+```text
 src/
   ├── *-api.js          ← Couche API/I/O (fonctions pures, exports normaux)
   ├── *-client.js       ← Couche logique métier (orchestration, exports _testOnly_)
@@ -147,13 +147,191 @@ test('generateTemplate gère les fallbacks', async () => {
 });
 ```
 
-#### Anti-Patterns à éviter
+#### Anti-Patterns pour modularité du code
 
 - **Variables globales** : Éviter GLOBAL_CONFIG → **Solution** : Paramètres explicites → **Règle** : Dependency Injection
 - **God Module** : Éviter modules avec multiples responsabilités → **Solution** : Séparer par responsabilité → **Règle** : SRP
 - **Appels internes directs** : Éviter d'appeler fonctions du même module → **Solution** : Extraire dans module dédié → **Règle** : Separation of Concerns
 - **Exports _testOnly_ dans API** : Éviter dans modules d'infrastructure → **Solution** : Exports normaux → **Règle** : Interface publique claire
 
+### Nested Functions (Fonctions Internes)
+
+#### Règles obligatoires pour Nested Functions
+
+- **CRITÈRE UNIQUE** : Convertir en nested function si appelée par UNE seule fonction parent
+- **PAS D'EXPORT** : Les fonctions nested ne doivent jamais avoir d'export `_testOnly_`
+- **HAUTE COHÉSION** : Fonction helper étroitement liée à la responsabilité du parent
+- **CAS RÉCURSIF** : Les fonctions récursives peuvent être nested si appelées uniquement par le parent
+
+#### Justification pour Nested Functions
+
+- **Encapsulation** : Les détails d'implémentation restent privés au parent
+- **Cohésion accrue** : Helper et parent sont colocalisés, relation explicite
+- **Tests simplifiés** : Tester le comportement complet via le parent, pas les détails internes
+- **Maintenance facilitée** : Changements du helper n'affectent que le parent
+
+#### Patterns validés pour Nested Functions
+
+**Fonction helper nested** :
+
+```javascript
+async function generateTemplate(config, apiKey, resolvedJsonSchema) {
+  // Fonction helper interne pour charger les instructions
+  async function loadInstructions(config) {
+    console.log(`[info] Chargement des instructions...`);
+    
+    if (!config?.nuextract?.templateTransformationInstructions?.instructions) {
+      throw new Error('Instructions non trouvées. Script stopped.');
+    }
+    
+    const instructionsArray = config.nuextract.templateTransformationInstructions.instructions;
+    
+    if (!Array.isArray(instructionsArray)) {
+      throw new Error('Instructions invalides: doit être un array. Script stopped.');
+    }
+    
+    return instructionsArray.join('\n');
+  }
+  
+  try {
+    const instructions = await loadInstructions(config);
+    // ... logique principale utilisant instructions
+    return template;
+  } catch (error) {
+    console.error(`Erreur lors de la génération: ${error.message}`);
+    throw error;
+  }
+}
+
+// EXPORT _testOnly_ uniquement pour le parent
+module.exports = {
+  _testOnly_generateTemplate: generateTemplate
+  // PAS d'export pour loadInstructions (nested)
+};
+```
+
+**Fonction récursive nested** :
+
+```javascript
+function recomposeArtifact(partialResults, schema) {
+  // Fonction récursive nested pour fusion JSON
+  function mergeAtPath(target, path, value) {
+    // ... logique de fusion
+    if (needsRecursion) {
+      mergeAtPath(target, subPath, subValue); // Appel récursif
+    }
+  }
+  
+  // Utilisation de la fonction nested
+  for (const result of partialResults) {
+    mergeAtPath(artifact, result.path, result.data);
+  }
+  
+  return artifact;
+}
+```
+
+#### Anti-Patterns pour Nested Functions
+
+- **Export _testOnly_ de nested** : Éviter `_testOnly_loadInstructions` → **Solution** : Tester via parent → **Règle** : Pas d'export pour nested
+- **Fonction multi-usage nested** : Éviter nested appelée par plusieurs parents → **Solution** : Module séparé → **Règle** : Critère unique d'appel
+- **Tests unitaires de nested** : Éviter tests directs de la nested → **Solution** : Tests du parent couvrent nested → **Règle** : Tester comportement complet
+
+#### État d'implémentation pour Nested Functions
+
+✅ [Pattern appliqué sur loadInstructions() nested dans generateTemplate() - 2025-11-11]
+✅ [Pattern appliqué sur buildBlockPrompt() nested dans extractHermes2022ConceptsWithNuExtract() - 2025-11-12]
+✅ [Pattern appliqué sur recomposeArtifact() (avec mergeJsonAtPath nested) dans extractHermes2022ConceptsWithNuExtract() - 2025-11-12]
+✅ [Pattern appliqué sur normalizeEnumValues() (récursive) nested dans extractHermes2022ConceptsWithNuExtract() - 2025-11-12]
+
+### Validations défensives appropriées
+
+#### Principe général pour validations défensives
+
+- **Valider uniquement ce qui peut être invalide** : Ne pas ajouter de validations pour des paramètres garantis valides par construction
+- **Éviter le code mort** : Les validations défensives qui ne peuvent jamais être déclenchées sont du code mort coûteux
+- **Éviter les tests inutiles** : Ne pas créer de tests pour des validations qui ne peuvent jamais échouer dans le flux réel
+
+#### Règles obligatoires pour validations défensives
+
+- **VALIDER INPUTS EXTERNES** : Valider les paramètres provenant de l'extérieur (API, fichiers, utilisateur)
+- **NE PAS VALIDER CONSTRUCTION LOCALE** : Ne pas valider les variables créées localement avec initialisation garantie
+- **NE PAS VALIDER PARAMÈTRES INTERNES** : Ne pas valider les paramètres passés entre fonctions internes du même module si garantis valides par construction
+- **ANALYSER LE FLUX** : Avant d'ajouter une validation, vérifier si l'erreur est réellement possible dans le flux d'exécution
+
+#### Justification pour validations défensives
+
+- **Performance** : Éliminer les vérifications inutiles qui consomment des cycles CPU
+- **Lisibilité** : Code plus clair sans validations défensives excessives
+- **Maintenance** : Moins de code mort à maintenir
+- **Tests** : Éviter les tests coûteux pour des cas impossibles
+
+#### Patterns validés pour validations défensives
+
+**Validation appropriée (input externe)** :
+
+```javascript
+async function processApiResponse(response) {
+  // ✅ Validation appropriée : response vient de l'extérieur
+  if (!response || typeof response !== 'object') {
+    throw new Error('Invalid response from API. Script stopped.');
+  }
+  // ... traitement
+}
+```
+
+**Pas de validation (construction locale)** :
+
+```javascript
+function recomposeArtifact(partialResults, schema) {
+  // Construction locale garantie non-null
+  const artifact = {
+    config: {},
+    method: {},
+    concepts: {}
+  };
+  
+  // ❌ INUTILE : artifact est garanti non-null par construction
+  // if (!artifact || typeof artifact !== 'object') {
+  //   throw new Error('Invalid artifact');
+  // }
+  
+  // ✅ Utilisation directe sans validation
+  mergeJsonAtPath(artifact, jsonPointer, value);
+  return artifact;
+}
+
+function mergeJsonAtPath(target, path, value) {
+  // ❌ INUTILE : target est garanti non-null (passé depuis construction locale)
+  // if (!target || typeof target !== 'object') {
+  //   throw new Error('Invalid target');
+  // }
+  
+  // ✅ Validation appropriée : path vient de données externes
+  if (!path || typeof path !== 'string') {
+    throw new Error('Invalid path: path must be a non-empty string. Script stopped.');
+  }
+  
+  // ... logique de fusion
+}
+```
+
+#### Anti-Patterns pour validations défensives
+
+- **Validation défensive excessive** : Éviter de valider tous les paramètres par réflexe → **Solution** : Analyser le flux pour identifier les cas réellement possibles → **Règle** : Valider uniquement les inputs externes
+- **Tests de code mort** : Éviter de créer des tests pour des validations impossibles → **Solution** : Supprimer les validations inutiles → **Règle** : Tests uniquement pour comportements réels
+- **Paranoia défensive** : Éviter "au cas où" sans analyse → **Solution** : Analyser le flux d'exécution → **Règle** : Evidence-based validation
+
+#### État d'implémentation pour validations défensives
+
+✅ [Règle documentée - 2025-11-12]
+✅ [Application complète sur nuextract-client.js - 2025-11-12]
+  - 7 validations inutiles supprimées (loadGlobalConfig, buildBlockPrompt, saveArtifact, mergeJsonAtPath)
+  - 7 scénarios de tests inutiles supprimés
+  - Tous les inputs externes et cas d'erreur réels conservés
+
 ## État d'implémentation
 
 ✅ [Règle définie et appliquée sur nuextract-client.js - 2025-10-26]
+✅ [Refactoring nested functions complété - 2025-11-12]
+✅ [Règle validations défensives appropriées définie - 2025-11-12]
