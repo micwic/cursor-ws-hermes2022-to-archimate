@@ -6,7 +6,7 @@ alwaysApply: true
 # bdd-governance.mdc : Gouvernance des spécifications détaillées selon les principes Behavior Driven Development
 
 > Créé le : [2025-08-14]  
-> Dernière mise à jour : 2025-11-12
+> Dernière mise à jour : 2025-11-15
 
 ## Objectifs de la règle
 
@@ -179,31 +179,62 @@ then(/^une erreur contenant "(.*)" est générée$/, (expectedMessage) => {
 
 #### Tests unitaires vs Tests d'intégration
 
-**Tests unitaires** :
+**Tests unitaires (`__tests__/unit/`)** :
 
-- **Portée** : Testent une unité de code isolée (fonction, classe, module)
+- **Portée** : Testent une **fonction ISOLÉE** (fonction, classe, module)
 - **Objectif** : Valider le comportement d'une unité indépendamment du reste du système
-- **Mocks** : Peuvent utiliser des mocks pour isoler l'unité testée (selon les besoins)
-- **Rapidité** : Généralement rapides (< 5-10s), pas de dépendances externes lourdes
+- **Mocks** : **TOUTES** les dépendances sont mockées (internes + externes)
+- **Rapidité** : Généralement rapides (< 5-10s), pas de dépendances externes
+- **Exemple** : Test de `orchestrateWorkflow()` en mockant `fetchData()`, `transformData()`, `saveResult()`, etc.
+- **Répertoire** : `__tests__/unit/`
 
-**Tests d'intégration** :
+**Tests d'intégration mockés (`__tests__/integration/with-external-system-mocked/`)** :
 
-- **Portée** : Testent l'interaction entre composants/systèmes
-- **Objectif** : Valider que les composants fonctionnent correctement ensemble
-- **Mocks** : Peuvent aussi utiliser des mocks selon les contraintes (coût, disponibilité, déterminisme)
-- **Durée** : Peuvent être plus lents si interactions avec systèmes externes réels
+- **Portée** : Testent l'**intégration des composants INTERNES** du système
+- **Objectif** : Valider que les composants internes fonctionnent correctement ensemble
+- **Mocks** : Uniquement la **frontière externe** (API externes, fetch réseau, base de données externes)
+- **Pas de mock** : Orchestration interne, fonctions métier, recomposition, normalisation
+- **Critère clé** : Mock à la **frontière système/externe uniquement**
+- **Rapidité** : Rapides (5-15s), pas d'appels réseau réels
+- **Exemple** : Test du workflow complet en mockant uniquement les appels API externes et les fetch réseau
+- **Répertoire** : `__tests__/integration/with-external-system-mocked/`
 
-**Note importante** : La présence ou l'absence de mocks ne définit PAS le type de test. Ce qui distingue unit/integration est la **portée du test** (unité isolée vs interaction entre composants).
+**Tests d'intégration réels (`__tests__/integration/with-external-system/`)** :
 
-#### Usage des mocks
+- **Portée** : Testent l'**intégration complète** avec systèmes externes réels
+- **Objectif** : Valider le fonctionnement end-to-end avec les vraies API et ressources
+- **Mocks** : **AUCUN**
+- **Durée** : Plus lents (15-120s selon complexité), dépendent du réseau et des systèmes externes
+- **Exemple** : Workflow complet avec appels API réels et accès aux ressources externes réelles
+- **Répertoire** : `__tests__/integration/with-external-system/`
 
-Les mocks peuvent être utilisés dans **les deux types de tests** selon les besoins :
+**Note importante** : La présence ou l'absence de mocks ne définit PAS le type de test. Ce qui distingue les niveaux est :
+- **Unit** : Portée = fonction isolée
+- **Integration mocké** : Portée = workflow interne complet, mock = frontière externe uniquement
+- **Integration réel** : Portée = end-to-end complet
 
-- **Tests unitaires mockés** : Pour isoler l'unité testée de ses dépendances
-- **Tests d'intégration mockés** : Pour simuler des systèmes externes (coût, quota, disponibilité, déterminisme)
-- **Tests d'intégration réels** : Pour valider avec les systèmes réels (validation end-to-end)
+#### Usage des mocks selon le niveau de test
 
-**Critères de choix** : Utiliser des mocks selon les contraintes du projet (coût API, quotas, disponibilité réseau, déterminisme des tests, vitesse d'exécution).
+**Règle générale** : Le mock doit correspondre au niveau de test et à la frontière testée.
+
+**Tests unitaires** :
+- Mock **toutes** les dépendances (internes + externes)
+- Objectif : isoler complètement la fonction testée
+- Exemple : `jest.mock('./data-transformer.js')`, `jest.mock('./api-client.js')`
+
+**Tests d'intégration mockés** :
+- Mock **uniquement** la frontière externe (API, réseau, filesystem externe, base de données externes)
+- **Ne pas mocker** les composants internes du système
+- Objectif : tester le workflow interne réel avec systèmes externes simulés
+- Exemple : Mock `https.request()` pour API externe, mock `fetch()` pour ressources HTTP distantes
+- **Critère décisif** : La frontière système/externe
+
+**Tests d'intégration réels** :
+- **Aucun mock**
+- Objectif : validation end-to-end réelle
+- Contraintes : Nécessite connectivité réseau, quotas API, coûts potentiels
+
+**Critères de choix** : Utiliser des mocks selon les contraintes du projet (coût API, quotas, disponibilité réseau, déterminisme des tests, vitesse d'exécution) et **le niveau de test** (unit vs integration).
 
 #### Timeouts
 

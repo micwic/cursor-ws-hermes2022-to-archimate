@@ -6,7 +6,7 @@ alwaysApply: true
 # root-directory-governance.mdc: Principes appliqués pour déterminer le répertoire racine
 
 > Créé le : 2025-10-20
-> Dernière mise à jour : 2025-11-08
+> Dernière mise à jour : 2025-11-15
 
 ## Objectifs
 
@@ -46,6 +46,28 @@ const resolveFromRepoRoot = (...segments) => path.resolve(repoRoot, ...segments)
 - Importer `find-up` (version synchronisée) et `path`
 - Toujours vérifier que `fullFilePath` est défini avant d'utiliser `path.dirname`
 - Définir localement un helper `resolveFromRepoRoot` si nécessaire
+
+### Explication du choix de `...segments` (rest parameter)
+
+Le helper `resolveFromRepoRoot` utilise un **rest parameter** (`...segments`) pour accepter un ou plusieurs arguments, offrant deux modes d'utilisation :
+
+**Mode 1 : Chemin complet** (usage le plus courant)
+```javascript
+resolveFromRepoRoot('hermes2022-concepts-site-extraction/config/file.json')
+```
+
+**Mode 2 : Segments séparés** (construction dynamique)
+```javascript
+const moduleName = 'hermes2022-concepts-site-extraction';
+const subDir = 'config';
+resolveFromRepoRoot(moduleName, subDir, 'file.json')
+```
+
+**Justification** :
+- **Flexibilité** : Permet de construire des chemins dynamiquement avec des variables
+- **Cohérence avec `path.resolve()`** : `path.resolve()` accepte plusieurs arguments, le helper suit le même pattern
+- **Simplicité** : Un seul helper pour les deux cas d'usage (pas besoin de deux fonctions distinctes)
+- **Performance** : Aucun impact négatif, même avec un seul argument
 
 ## Règles à appliquer
 
@@ -127,9 +149,15 @@ async function resolveFromRepoRoot(...segments) {
   return path.resolve(repoRoot, ...segments);
 }
 
-// Utilisation
+// Utilisation - Mode 1 : Chemin complet (usage le plus courant)
 async function loadConfig() {
   const configPath = await resolveFromRepoRoot('hermes2022-concepts-site-extraction/config/extraction-config.json');
+  // ...
+}
+
+// Utilisation - Mode 2 : Segments séparés (construction dynamique)
+async function loadConfigDynamic(moduleName, fileName) {
+  const configPath = await resolveFromRepoRoot(moduleName, 'config', fileName);
   // ...
 }
 ```
@@ -166,6 +194,13 @@ function resolveFromRepoRootSync(...segments) {
   const repoRoot = getRepoRootSync();
   return path.resolve(repoRoot, ...segments);
 }
+
+// Utilisation - Mode 1 : Chemin complet
+const configPath = resolveFromRepoRootSync('hermes2022-concepts-site-extraction/config/extraction-config.json');
+
+// Utilisation - Mode 2 : Segments séparés
+const moduleName = 'hermes2022-concepts-site-extraction';
+const configPath2 = resolveFromRepoRootSync(moduleName, 'config', 'extraction-config.json');
 ```
 
 ##### ❌ Incorrect — Chemins relatifs fragiles
